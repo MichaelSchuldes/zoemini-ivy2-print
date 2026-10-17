@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0f19" />
+  <title>Zoemini 2 / Ivy 2 — Web Print Studio</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Top Header -->
+  <header class="app-header">
+    <div class="brand-group">
+      <div class="brand-logo" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+          <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title">Zoemini 2 / Ivy 2 Web Print Studio</h1>
+        <p class="brand-subtitle">100% Client-Side Bluetooth RFCOMM Driver • 2×3" Full Sheet &amp; Dual Round Stickers (ZP-2030-2C)</p>
+      </div>
+    </div>
+
+    <div class="header-conn-controls">
+      <span id="connection-status-badge" class="status-pill pill-neutral">Disconnected</span>
+      <button id="btn-connect-bt" class="btn btn-primary" type="button">
+        Connect Bluetooth (Web Serial)
+      </button>
+      <button id="btn-disconnect" class="btn btn-danger" type="button" hidden>
+        Disconnect
+      </button>
+
+      <!-- Three-Dot Menu for Simulator Mode & Fault Controls -->
+      <details id="header-more-menu" class="more-menu">
+        <summary class="btn btn-icon-only" aria-label="Simulator &amp; Developer Menu" title="Simulator &amp; Developer Menu">
+          &#8942;
+        </summary>
+        <div class="more-menu-popover">
+          <div class="more-menu-title">Developer &amp; Hardware Simulator</div>
+          <button id="btn-connect-sim" class="btn btn-sim btn-sm" type="button" style="width:100%;">
+            Start Simulator Mode
+          </button>
+
+          <!-- Simulator Fault Injection Controls (shown inside menu when Simulator is active) -->
+          <div id="simulator-fault-controls" class="sim-menu-controls" hidden>
+            <div class="control-label-row" style="margin-bottom:0.45rem;">
+              <label for="sim-select-paper">Sim Loaded Paper</label>
+              <select id="sim-select-paper">
+                <option value="full-2x3" selected>2×3" Full Sheet (ZP-2030)</option>
+                <option value="dual-round-2c">2× Round Cutouts (ZP-2030-2C)</option>
+              </select>
+            </div>
+            <div class="control-label-row">
+              <span>Simulator Battery Level</span>
+              <span id="sim-battery-label" class="control-value">63%</span>
+            </div>
+            <input id="sim-battery-range" type="range" min="5" max="63" value="63" />
+            <div style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.45rem;">
+              <label class="checkbox-row">
+                <input id="sim-chk-cover" type="checkbox" />
+                <span>Sim Cover Open</span>
+              </label>
+              <label class="checkbox-row">
+                <input id="sim-chk-nopaper" type="checkbox" />
+                <span>Sim Paper Out</span>
+              </label>
+              <label class="checkbox-row">
+                <input id="sim-chk-smartsheet" type="checkbox" />
+                <span>Sim Bad SmartSheet</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <!-- Browser Compatibility Warning Banner -->
+  <div id="compat-warning-banner" class="compat-banner" hidden>
+    <strong>Browser Notice:</strong>
+    <span id="compat-warning-text"></span>
+  </div>
+
+  <!-- Android First-Use PWA Benefits Banner -->
+  <div id="android-pwa-banner" class="pwa-promo-banner" role="region" aria-label="Install Android App" hidden>
+    <div class="pwa-promo-content">
+      <div class="pwa-promo-title">
+        <strong>📲 Install as an Android App (PWA) for Direct Gallery Sharing</strong>
+      </div>
+      <div class="pwa-promo-text">
+        Add this studio to your home screen to unlock <strong>Android Share Sheet integration</strong> (share 1 photo—or 2 photos at once for Dual Round Stickers—directly from your Gallery app), full-screen framing, and instant offline-ready launch.
+      </div>
+    </div>
+    <div class="pwa-promo-actions">
+      <button id="btn-install-pwa" class="btn btn-sm btn-primary" type="button" hidden>
+        Install App
+      </button>
+      <button id="btn-dismiss-pwa-banner" class="btn btn-sm" type="button">
+        Got it
+      </button>
+    </div>
+  </div>
+
+  <!-- Main 3-Column Studio Workspace -->
+  <main class="workspace-grid">
+    <!-- Left Column: Paper Mode, Media Slots & Printer Telemetry -->
+    <section class="col-left">
+      <!-- Paper Format & Media Slots Card -->
+      <div id="card-paper-media" class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">1. Paper Type &amp; Media</h2>
+          <label class="checkbox-row" title="Toggle non-printed crop grid and circular die-cut rings">
+            <input id="chk-show-guides" type="checkbox" checked />
+            <span>Show Cut Guides</span>
+          </label>
+        </div>
+
+        <div class="segmented-group" role="group" aria-label="ZINK Paper Format">
+          <button id="btn-paper-full" class="btn active" type="button">
+            2×3" Full Sheet (ZP-2030)
+          </button>
+          <button id="btn-paper-dual-round" class="btn" type="button">
+            2× Round Cutouts (ZP-2030-2C)
+          </button>
+        </div>
+
+        <!-- Paper Mismatch Warning Banner (shown when UI mode != device loaded paper) -->
+        <div id="paper-mismatch-banner" class="mismatch-banner" role="alert" hidden>
+          <div class="mismatch-banner-body">
+            <strong>⚠ Paper Type Mismatch:</strong>
+            <span id="paper-mismatch-text">
+              The printer has 2× Round Cutouts (ZP-2030-2C) loaded, but the UI is set to 2×3" Full Sheet.
+            </span>
+          </div>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+            <button id="btn-match-device-paper" class="btn btn-sm btn-warn" type="button" style="flex:1;">
+              Switch UI to Match Printer
+            </button>
+            <button id="btn-update-tray-to-ui" class="btn btn-sm" type="button" style="flex:1;" title="I just loaded this paper into the printer tray">
+              I Loaded This Paper in Printer
+            </button>
+          </div>
+        </div>
+
+        <!-- Cover Closed Paper Change Prompt (auto-shown when printer Top Cover is opened & closed) -->
+        <div id="cover-closed-paper-prompt" class="mismatch-banner" style="background:rgba(14,165,233,0.14);border-color:rgba(14,165,233,0.5);color:#bae6fd;" hidden>
+          <div class="mismatch-banner-body">
+            <strong>Top Cover Closed — Did you swap paper?</strong>
+            <span>Select which ZINK paper pack is now loaded in the tray:</span>
+          </div>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+            <button id="btn-confirm-loaded-full" class="btn btn-sm btn-primary" type="button" style="flex:1;">
+              2×3" Full Sheet (ZP-2030)
+            </button>
+            <button id="btn-confirm-loaded-round" class="btn btn-sm btn-primary" type="button" style="flex:1;">
+              2× Round (ZP-2030-2C)
+            </button>
+          </div>
+        </div>
+
+        <!-- Dual Round Quick Actions -->
+        <div id="dual-round-actions-bar" class="dual-round-bar" hidden>
+          <button id="btn-copy-slot1-to-2" class="btn btn-sm" type="button" title="Duplicate Top Sticker image & crop settings to Bottom Sticker">
+            Copy Top → Bottom
+          </button>
+          <button id="btn-swap-slots" class="btn btn-sm" type="button" title="Swap Top and Bottom circle stickers">
+            Swap Top ⇅ Bottom
+          </button>
+        </div>
+
+        <!-- Slot 1 (Full Sheet OR Top Round Sticker) -->
+        <div id="slot-card-1" class="slot-card slot-active">
+          <div class="slot-card-header">
+            <span id="slot1-card-title" class="slot-card-title">Full 2×3" Sheet Media (50 × 76 mm)</span>
+            <span class="status-pill pill-neutral" style="font-size:0.7rem;padding:0.15rem 0.5rem;">Slot #1</span>
+          </div>
+          <div id="slot1-file-meta" class="slot-meta">Sample-2x3-Calibration.png</div>
+          <div class="slot-actions">
+            <label class="btn btn-sm btn-primary" for="file-input-slot1">
+              Choose Image / SVG / PDF
+            </label>
+            <input id="file-input-slot1" type="file" accept="image/*,image/svg+xml,.svg,application/pdf,.pdf" hidden />
+            <button id="btn-sample-slot1" class="btn btn-sm" type="button">Sample</button>
+            <button id="btn-clear-slot1" class="btn btn-sm" type="button">Clear</button>
+          </div>
+        </div>
+
+        <!-- Slot 2 (Bottom Round Sticker - only shown in Dual Round Mode) -->
+        <div id="slot-card-2" class="slot-card" hidden>
+          <div class="slot-card-header">
+            <span class="slot-card-title">Sticker #2 — Bottom Circle (Ø 33mm)</span>
+            <span class="status-pill pill-neutral" style="font-size:0.7rem;padding:0.15rem 0.5rem;">Slot #2</span>
+          </div>
+          <div id="slot2-file-meta" class="slot-meta">Sample-Bottom-Sticker.png</div>
+          <div class="slot-actions">
+            <label class="btn btn-sm btn-primary" for="file-input-slot2">
+              Choose Image / SVG / PDF
+            </label>
+            <input id="file-input-slot2" type="file" accept="image/*,image/svg+xml,.svg,application/pdf,.pdf" hidden />
+            <button id="btn-sample-slot2" class="btn btn-sm" type="button">Sample</button>
+            <button id="btn-clear-slot2" class="btn btn-sm" type="button">Clear</button>
+          </div>
+        </div>
+
+        <!-- Multi-Page PDF Navigation (Shown ONLY when active slot holds a PDF) -->
+        <div id="pdf-pagination-box" class="pdf-bar" hidden>
+          <span class="pdf-bar-label">PDF Page:</span>
+          <div class="pdf-bar-controls">
+            <button id="btn-pdf-prev" class="btn btn-sm" type="button">&larr; Prev</button>
+            <input id="input-pdf-page" class="pdf-page-input" type="number" min="1" value="1" />
+            <span id="label-pdf-total">of 1</span>
+            <button id="btn-pdf-next" class="btn btn-sm" type="button">Next &rarr;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Printer Hardware Telemetry & Settings Card -->
+      <div id="card-telemetry" class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">Printer Telemetry (PV-223)</h2>
+          <button id="btn-refresh-status" class="btn btn-sm" type="button" disabled>
+            Refresh
+          </button>
+        </div>
+
+        <div class="telemetry-grid">
+          <div class="tel-item">
+            <div class="tel-label">Battery (Min 30%)</div>
+            <div class="tel-val-row">
+              <span id="tel-battery-value">—</span>
+            </div>
+            <div class="battery-track">
+              <div id="tel-battery-bar" class="battery-fill"></div>
+            </div>
+          </div>
+
+          <div class="tel-item">
+            <div class="tel-label">Top Cover</div>
+            <div class="tel-val-row">
+              <span id="tel-cover-status" class="tel-badge">—</span>
+            </div>
+          </div>
+
+          <div class="tel-item">
+            <div class="tel-label">Loaded ZINK Paper</div>
+            <div class="tel-val-row">
+              <span id="tel-paper-status" class="tel-badge">—</span>
+            </div>
+          </div>
+
+          <div class="tel-item">
+            <div class="tel-label">Smart Sheet</div>
+            <div class="tel-val-row">
+              <span id="tel-smart-sheet" class="tel-badge">—</span>
+            </div>
+          </div>
+
+          <div class="tel-item">
+            <div class="tel-label">Firmware / TMD</div>
+            <div class="tel-val-row">
+              <span id="tel-firmware" class="tel-badge">—</span>
+            </div>
+          </div>
+
+          <div class="tel-item">
+            <div class="tel-label">Lifetime Prints / MTU</div>
+            <div class="tel-val-row">
+              <span id="tel-print-count" class="tel-badge">—</span>
+              <span id="tel-mtu" class="tel-badge" style="font-size:0.72rem;">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <label for="select-device-paper-override" title="The Zoemini 2 optical sensor reads thermal calibration (TMD) during printing, not die-cut shapes. Select which ZINK paper pack is loaded in the tray.">Loaded Tray Paper:</label>
+          <select id="select-device-paper-override">
+            <option value="full-2x3" selected>2×3" Full Sheet (ZP-2030)</option>
+            <option value="dual-round-2c">2× Round Cutouts (ZP-2030-2C)</option>
+          </select>
+        </div>
+
+        <div class="settings-row">
+          <label for="select-auto-power-off">Auto Power-Off:</label>
+          <div style="display:flex;gap:0.45rem;align-items:center;">
+            <select id="select-auto-power-off" disabled>
+              <option value="3">3 minutes</option>
+              <option value="5" selected>5 minutes</option>
+              <option value="10">10 minutes</option>
+            </select>
+            <button id="btn-reboot-printer" class="btn btn-sm btn-danger" type="button" disabled>
+              Reboot
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Center Column: Interactive 2:3 Physical Canvas Preview & Print Trigger -->
+    <section class="col-preview">
+      <div id="card-preview-stage" class="panel-card preview-stage-card">
+        <div class="preview-top-bar">
+          <h2 class="panel-title">2. Interactive 2×3" Print Preview</h2>
+          <span id="active-slot-editing-badge" class="status-pill pill-sim">
+            Editing: Full 2×3" Sheet
+          </span>
+        </div>
+
+        <div class="preview-canvas-wrapper">
+          <canvas id="zink-preview-canvas" width="1280" height="1920"></canvas>
+        </div>
+
+        <div id="canvas-mode-caption" class="canvas-caption">
+          ZP-2030 Full 2×3" Sheet Preview (Drag to pan • Pinch or scroll to zoom)
+        </div>
+        <div id="payload-size-badge" class="payload-badge">
+          ZINK Output: 640×1616 (180°) • Calculating...
+        </div>
+
+        <!-- Print Progress Indicator -->
+        <div id="print-progress-container" class="progress-box" hidden>
+          <div class="progress-track">
+            <div id="print-progress-fill" class="progress-fill"></div>
+          </div>
+          <div id="print-progress-text" class="progress-text">Preparing print job...</div>
+        </div>
+
+        <div class="print-cta-bar">
+          <button id="btn-print-now" class="btn btn-primary btn-block" type="button" disabled>
+            Connect Printer to Print
+          </button>
+          <div class="export-btn-row">
+            <button id="btn-download-zink-jpeg" class="btn btn-sm" type="button" title="Download the exact 640×1616 (180° rotated) baseline JPEG sent over Bluetooth RFCOMM">
+              Download 640×1616 ZINK JPEG
+            </button>
+            <button id="btn-download-preview-png" class="btn btn-sm" type="button" title="Download clean 1280×1920 (2:3) high-res preview PNG">
+              Download 2:3 Preview PNG
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Column: Interactive Crop, Zoom, Rotation, Calibration & Hex Console -->
+    <section class="col-right">
+      <div id="card-crop-controls" class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">3. Crop, Zoom &amp; Rotation</h2>
+          <button id="btn-reset-transform" class="btn btn-sm" type="button">
+            Reset All
+          </button>
+        </div>
+
+        <!-- Aspect Ratio Crop vs Fit Mode -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Aspect Framing Mode</span>
+          </div>
+          <div class="segmented-group">
+            <button id="btn-scale-crop" class="btn btn-sm active" type="button">
+              Crop to Fill (Cover)
+            </button>
+            <button id="btn-scale-contain" class="btn btn-sm" type="button">
+              Fit Entire (Contain)
+            </button>
+          </div>
+        </div>
+
+        <!-- Zoom Slider & Quick Buttons -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <label for="slider-zoom">Zoom Ratio</label>
+            <span id="label-zoom-val" class="control-value">100%</span>
+          </div>
+          <input id="slider-zoom" type="range" min="25" max="500" step="5" value="100" />
+          <div class="toolbar-grid-4" style="margin-top:0.35rem;margin-bottom:0;">
+            <button id="btn-zoom-out" class="btn btn-sm" type="button">&minus; Zoom</button>
+            <button id="btn-zoom-reset" class="btn btn-sm" type="button">100%</button>
+            <button id="btn-zoom-in" class="btn btn-sm" type="button">&plus; Zoom</button>
+            <button id="btn-center-pan" class="btn btn-sm" type="button">Center Pan</button>
+          </div>
+        </div>
+
+        <!-- 90° Step Rotation & Flip -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Orientation &amp; Mirroring</span>
+          </div>
+          <div class="toolbar-grid-4">
+            <button id="btn-rot-ccw" class="btn btn-sm" type="button" title="Rotate 90° Counter-Clockwise">↺ -90°</button>
+            <button id="btn-rot-cw" class="btn btn-sm" type="button" title="Rotate 90° Clockwise">↻ +90°</button>
+            <button id="btn-flip-h" class="btn btn-sm" type="button" title="Flip Horizontal">⇄ Flip H</button>
+            <button id="btn-flip-v" class="btn btn-sm" type="button" title="Flip Vertical">⇅ Flip V</button>
+          </div>
+          <label class="checkbox-row">
+            <input id="chk-auto-landscape" type="checkbox" />
+            <span>Auto-rotate landscape images 90° to fit portrait</span>
+          </label>
+        </div>
+
+        <!-- Fine Rotation Slider (-45° to +45°) -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <label for="slider-fine-rot">Fine Straightening Angle</label>
+            <span id="label-fine-rot-val" class="control-value">0.0°</span>
+          </div>
+          <input id="slider-fine-rot" type="range" min="-45" max="45" step="0.5" value="0" />
+        </div>
+
+        <!-- Color & JPEG Quality Collapsible -->
+        <details class="panel-details">
+          <summary>Image Color &amp; JPEG Quality Adjustments</summary>
+          <div style="margin-top:0.65rem;">
+            <div class="control-group">
+              <div class="control-label-row">
+                <label for="slider-brightness">Brightness</label>
+                <span id="label-brightness" class="control-value">100%</span>
+              </div>
+              <input id="slider-brightness" type="range" min="50" max="150" value="100" />
+            </div>
+
+            <div class="control-group">
+              <div class="control-label-row">
+                <label for="slider-contrast">Contrast</label>
+                <span id="label-contrast" class="control-value">100%</span>
+              </div>
+              <input id="slider-contrast" type="range" min="50" max="150" value="100" />
+            </div>
+
+            <div class="control-group">
+              <div class="control-label-row">
+                <label for="slider-saturation">Saturation</label>
+                <span id="label-saturation" class="control-value">100%</span>
+              </div>
+              <input id="slider-saturation" type="range" min="0" max="200" value="100" />
+            </div>
+
+            <div class="control-group" style="margin-bottom:0;">
+              <div class="control-label-row">
+                <label for="slider-jpeg-quality">Baseline JPEG Quality</label>
+                <span id="label-jpeg-quality" class="control-value">95%</span>
+              </div>
+              <input id="slider-jpeg-quality" type="range" min="60" max="100" value="95" />
+            </div>
+          </div>
+        </details>
+
+        <!-- Dual Round Cutout Bleed & Alignment Calibration (Only shown in Dual Round Mode) -->
+        <details id="round-calibration-details" class="panel-details" open hidden>
+          <summary>Round Sticker Cutout Calibration (ZP-2030-2C)</summary>
+          <div class="cal-grid">
+            <div class="cal-field">
+              <label for="cal-diameter-mm">Cutout Ø (mm)</label>
+              <input id="cal-diameter-mm" type="number" step="0.5" min="20" max="48" value="33" />
+            </div>
+            <div class="cal-field">
+              <label for="cal-bleed-mm">Radial Bleed (mm)</label>
+              <input id="cal-bleed-mm" type="number" step="0.25" min="0" max="5" value="2" />
+            </div>
+            <div class="cal-field">
+              <label for="cal-offset-x-mm">Center X Shift (mm)</label>
+              <input id="cal-offset-x-mm" type="number" step="0.25" min="-5" max="5" value="0" />
+            </div>
+            <div class="cal-field">
+              <label for="cal-top-y-mm">Top #1 Y Shift (mm)</label>
+              <input id="cal-top-y-mm" type="number" step="0.25" min="-5" max="5" value="0" />
+            </div>
+            <div class="cal-field">
+              <label for="cal-bottom-y-mm">Bottom #2 Y Shift (mm)</label>
+              <input id="cal-bottom-y-mm" type="number" step="0.25" min="-5" max="5" value="0" />
+            </div>
+            <div class="cal-field" style="display:flex;align-items:end;">
+              <button id="btn-reset-calibration" class="btn btn-sm" type="button" style="width:100%;">
+                Reset Defaults
+              </button>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Protocol Hex Inspector Card -->
+      <div id="card-protocol-inspector" class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            4. Protocol Inspector
+            <span id="hex-log-count" class="status-pill pill-neutral" style="font-size:0.7rem;padding:0.1rem 0.45rem;margin-left:0.3rem;">0</span>
+          </h2>
+          <div style="display:flex;gap:0.35rem;">
+            <button id="btn-export-log" class="btn btn-sm" type="button">Export JSON</button>
+            <button id="btn-clear-log" class="btn btn-sm" type="button">Clear</button>
+          </div>
+        </div>
+
+        <label class="checkbox-row" style="margin-bottom:0.5rem;">
+          <input id="chk-hide-jpeg-chunks" type="checkbox" checked />
+          <span>Hide 990-byte JPEG stream chunks (show 34B control packets only)</span>
+        </label>
+
+        <div id="hex-log-entries" class="hex-log-box">
+          <div class="log-empty">
+            No protocol packets logged yet. Connect to printer to inspect traffic.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
