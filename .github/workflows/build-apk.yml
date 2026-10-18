@@ -21,17 +21,17 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
           cache: 'gradle'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools build-tools;34.0.0 platforms;android-34'
 
@@ -43,25 +43,33 @@ jobs:
       - name: Make Gradlew Executable
         run: chmod +x android/gradlew
 
-      - name: Build Debug APK
+      - name: Build APKs (Release & Debug)
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace
-          cp app/build/outputs/apk/debug/com.michaelschuldes.zoemini-ivy2-print-debug.apk app/build/outputs/apk/debug/com.michaelschuldes.zoemini-ivy2-print.apk
+          ./gradlew assembleDebug assembleRelease --stacktrace
+          cp app/build/outputs/apk/release/com.michaelschuldes.zoemini-ivy2-print-release.apk app/build/outputs/apk/release/com.michaelschuldes.zoemini-ivy2-print.apk
+
+      - name: Upload Release APK Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: com.michaelschuldes.zoemini-ivy2-print-release
+          path: android/app/build/outputs/apk/release/*.apk
+          retention-days: 30
 
       - name: Upload Debug APK Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: com.michaelschuldes.zoemini-ivy2-print-debug
           path: android/app/build/outputs/apk/debug/*.apk
           retention-days: 30
 
-      - name: Upload APK to GitHub Release
+      - name: Upload APKs to GitHub Release
         if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
-            android/app/build/outputs/apk/debug/com.michaelschuldes.zoemini-ivy2-print.apk
+            android/app/build/outputs/apk/release/com.michaelschuldes.zoemini-ivy2-print.apk
+            android/app/build/outputs/apk/release/com.michaelschuldes.zoemini-ivy2-print-release.apk
             android/app/build/outputs/apk/debug/com.michaelschuldes.zoemini-ivy2-print-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
