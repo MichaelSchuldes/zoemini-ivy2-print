@@ -139,6 +139,77 @@ body {
   margin-bottom: 0.55rem;
 }
 
+.header-device-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.65rem;
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #34d399;
+  max-width: 240px;
+}
+
+.header-device-badge[hidden] {
+  display: none !important;
+}
+
+.device-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.9);
+  flex-shrink: 0;
+}
+
+.device-name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-spinner {
+  color: var(--accent-warn);
+  margin-right: 0;
+  vertical-align: middle;
+}
+
+.header-spinner[hidden] {
+  display: none !important;
+}
+
+.more-menu-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.84rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.more-menu-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent-primary);
+}
+
+.more-menu-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0.55rem 0;
+}
+
 .sim-menu-controls {
   margin-top: 0.65rem;
   padding-top: 0.65rem;
@@ -150,6 +221,58 @@ body {
 
 .sim-menu-controls[hidden] {
   display: none !important;
+}
+
+/* Dedicated Page: Printer Telemetry & Protocol Inspector */
+.telemetry-page {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 3rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.telemetry-page[hidden] {
+  display: none !important;
+}
+
+.telemetry-page-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.telemetry-page-title-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.telemetry-page-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.telemetry-page-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.telemetry-page-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .telemetry-page-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Status Pill */

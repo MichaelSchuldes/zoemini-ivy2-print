@@ -34,6 +34,15 @@
     </div>
 
     <div class="header-conn-controls">
+      <!-- Connected Device Name in Header -->
+      <div id="header-connected-device" class="header-device-badge" hidden>
+        <span class="device-dot"></span>
+        <span id="header-device-name" class="device-name-text"></span>
+      </div>
+
+      <!-- Connecting Spinner in Header -->
+      <span id="header-conn-spinner" class="spinner header-spinner" hidden aria-hidden="true"></span>
+
       <span id="connection-status-badge" class="status-pill pill-neutral">Disconnected</span>
       <button id="btn-connect-bt" class="btn btn-primary" type="button">
         Connect Bluetooth (Web Serial)
@@ -42,12 +51,21 @@
         Disconnect
       </button>
 
-      <!-- Three-Dot Menu for Simulator Mode & Fault Controls -->
+      <!-- Three-Dot Menu for Telemetry, Simulator & Developer Options -->
       <details id="header-more-menu" class="more-menu">
-        <summary class="btn btn-icon-only" aria-label="Simulator &amp; Developer Menu" title="Simulator &amp; Developer Menu">
+        <summary class="btn btn-icon-only" aria-label="Menu" title="Menu">
           &#8942;
         </summary>
         <div class="more-menu-popover">
+          <button id="menu-btn-telemetry" class="more-menu-action-btn" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+            </svg>
+            <span>Telemetry &amp; Protocol Inspector</span>
+          </button>
+
+          <div class="more-menu-divider"></div>
+
           <div class="more-menu-title">Developer &amp; Hardware Simulator</div>
           <button id="btn-connect-sim" class="btn btn-sim btn-sm" type="button" style="width:100%;">
             Start Simulator Mode
@@ -117,8 +135,8 @@
   </div>
 
   <!-- Main 3-Column Studio Workspace -->
-  <main class="workspace-grid">
-    <!-- Left Column: Paper Mode, Media Slots & Printer Telemetry -->
+  <main id="view-studio" class="workspace-grid">
+    <!-- Left Column: Paper Mode & Media Slots -->
     <section class="col-left">
       <!-- Paper Format & Media Slots Card -->
       <div id="card-paper-media" class="panel-card">
@@ -227,87 +245,6 @@
             <button id="btn-pdf-next" class="btn btn-sm" type="button">Next &rarr;</button>
           </div>
         </div>
-      </div>
-
-      <!-- Printer Hardware Telemetry & Settings Card -->
-      <div id="card-telemetry" class="panel-card">
-        <div class="panel-header">
-          <h2 class="panel-title">Printer Telemetry (PV-223)</h2>
-          <button id="btn-refresh-status" class="btn btn-sm" type="button" disabled>
-            Refresh
-          </button>
-        </div>
-
-        <div class="telemetry-grid">
-          <div class="tel-item">
-            <div class="tel-label">Battery (Min 30%)</div>
-            <div class="tel-val-row">
-              <span id="tel-battery-value">—</span>
-            </div>
-            <div class="battery-track">
-              <div id="tel-battery-bar" class="battery-fill"></div>
-            </div>
-          </div>
-
-          <div class="tel-item">
-            <div class="tel-label">Top Cover</div>
-            <div class="tel-val-row">
-              <span id="tel-cover-status" class="tel-badge">—</span>
-            </div>
-          </div>
-
-          <div class="tel-item">
-            <div class="tel-label">Loaded ZINK Paper</div>
-            <div class="tel-val-row">
-              <span id="tel-paper-status" class="tel-badge">—</span>
-            </div>
-          </div>
-
-          <div class="tel-item">
-            <div class="tel-label">Smart Sheet</div>
-            <div class="tel-val-row">
-              <span id="tel-smart-sheet" class="tel-badge">—</span>
-            </div>
-          </div>
-
-          <div class="tel-item">
-            <div class="tel-label">Firmware / TMD</div>
-            <div class="tel-val-row">
-              <span id="tel-firmware" class="tel-badge">—</span>
-            </div>
-          </div>
-
-          <div class="tel-item">
-            <div class="tel-label">Lifetime Prints / MTU</div>
-            <div class="tel-val-row">
-              <span id="tel-print-count" class="tel-badge">—</span>
-              <span id="tel-mtu" class="tel-badge" style="font-size:0.72rem;">—</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="settings-row">
-          <label for="select-device-paper-override" title="The Zoemini 2 optical sensor reads thermal calibration (TMD) during printing, not die-cut shapes. Select which ZINK paper pack is loaded in the tray.">Loaded Tray Paper:</label>
-          <select id="select-device-paper-override">
-            <option value="full-2x3" selected>2×3" Full Sheet (ZP-2030)</option>
-            <option value="dual-round-2c">2× Round Cutouts (ZP-2030-2C)</option>
-          </select>
-        </div>
-
-        <div class="settings-row">
-          <label for="select-auto-power-off">Auto Power-Off:</label>
-          <div style="display:flex;gap:0.45rem;align-items:center;">
-            <select id="select-auto-power-off" disabled>
-              <option value="3">3 minutes</option>
-              <option value="5" selected>5 minutes</option>
-              <option value="10">10 minutes</option>
-            </select>
-            <button id="btn-reboot-printer" class="btn btn-sm btn-danger" type="button" disabled>
-              Reboot
-            </button>
-          </div>
-        </div>
-      </div>
     </section>
 
     <!-- Center Column: Interactive 2:3 Physical Canvas Preview & Print Trigger -->
@@ -343,14 +280,6 @@
           <button id="btn-print-now" class="btn btn-primary btn-block" type="button" disabled>
             Connect Printer to Print
           </button>
-          <div class="export-btn-row">
-            <button id="btn-download-zink-jpeg" class="btn btn-sm" type="button" title="Download the exact 640×1616 (180° rotated) baseline JPEG sent over Bluetooth RFCOMM">
-              Download 640×1616 ZINK JPEG
-            </button>
-            <button id="btn-download-preview-png" class="btn btn-sm" type="button" title="Download clean 1280×1920 (2:3) high-res preview PNG">
-              Download 2:3 Preview PNG
-            </button>
-          </div>
         </div>
       </div>
     </section>
@@ -492,11 +421,107 @@
         </details>
       </div>
 
+    </section>
+  </main>
+
+  <!-- Dedicated Page: Printer Telemetry & Protocol Inspector -->
+  <main id="view-telemetry" class="telemetry-page" hidden>
+    <div class="telemetry-page-header">
+      <button id="btn-back-to-studio" class="btn btn-secondary" type="button">
+        &larr; Back to Print Studio
+      </button>
+      <div class="telemetry-page-title-box">
+        <h2 class="telemetry-page-title">Printer Telemetry &amp; Protocol Inspector</h2>
+        <span class="telemetry-page-subtitle">Live hardware sensors, status registers, and Bluetooth RFCOMM packets</span>
+      </div>
+    </div>
+
+    <div class="telemetry-page-grid">
+      <!-- Printer Hardware Telemetry & Settings Card -->
+      <div id="card-telemetry" class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">Printer Telemetry (PV-223)</h2>
+          <button id="btn-refresh-status" class="btn btn-sm" type="button" disabled>
+            Refresh
+          </button>
+        </div>
+
+        <div class="telemetry-grid">
+          <div class="tel-item">
+            <div class="tel-label">Battery (Min 30%)</div>
+            <div class="tel-val-row">
+              <span id="tel-battery-value">—</span>
+            </div>
+            <div class="battery-track">
+              <div id="tel-battery-bar" class="battery-fill"></div>
+            </div>
+          </div>
+
+          <div class="tel-item">
+            <div class="tel-label">Top Cover</div>
+            <div class="tel-val-row">
+              <span id="tel-cover-status" class="tel-badge">—</span>
+            </div>
+          </div>
+
+          <div class="tel-item">
+            <div class="tel-label">Loaded ZINK Paper</div>
+            <div class="tel-val-row">
+              <span id="tel-paper-status" class="tel-badge">—</span>
+            </div>
+          </div>
+
+          <div class="tel-item">
+            <div class="tel-label">Smart Sheet</div>
+            <div class="tel-val-row">
+              <span id="tel-smart-sheet" class="tel-badge">—</span>
+            </div>
+          </div>
+
+          <div class="tel-item">
+            <div class="tel-label">Firmware / TMD</div>
+            <div class="tel-val-row">
+              <span id="tel-firmware" class="tel-badge">—</span>
+            </div>
+          </div>
+
+          <div class="tel-item">
+            <div class="tel-label">Lifetime Prints / MTU</div>
+            <div class="tel-val-row">
+              <span id="tel-print-count" class="tel-badge">—</span>
+              <span id="tel-mtu" class="tel-badge" style="font-size:0.72rem;">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <label for="select-device-paper-override" title="The Zoemini 2 optical sensor reads thermal calibration (TMD) during printing, not die-cut shapes. Select which ZINK paper pack is loaded in the tray.">Loaded Tray Paper:</label>
+          <select id="select-device-paper-override">
+            <option value="full-2x3" selected>2×3" Full Sheet (ZP-2030)</option>
+            <option value="dual-round-2c">2× Round Cutouts (ZP-2030-2C)</option>
+          </select>
+        </div>
+
+        <div class="settings-row">
+          <label for="select-auto-power-off">Auto Power-Off:</label>
+          <div style="display:flex;gap:0.45rem;align-items:center;">
+            <select id="select-auto-power-off" disabled>
+              <option value="3">3 minutes</option>
+              <option value="5" selected>5 minutes</option>
+              <option value="10">10 minutes</option>
+            </select>
+            <button id="btn-reboot-printer" class="btn btn-sm btn-danger" type="button" disabled>
+              Reboot
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Protocol Hex Inspector Card -->
       <div id="card-protocol-inspector" class="panel-card">
         <div class="panel-header">
           <h2 class="panel-title">
-            4. Protocol Inspector
+            Protocol Inspector
             <span id="hex-log-count" class="status-pill pill-neutral" style="font-size:0.7rem;padding:0.1rem 0.45rem;margin-left:0.3rem;">0</span>
           </h2>
           <div style="display:flex;gap:0.35rem;">
@@ -516,7 +541,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </div>
   </main>
 
   <!-- Bluetooth Device Picker Modal (Android Bridge) -->

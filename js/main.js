@@ -58,8 +58,52 @@ function initAndroidApkBanner() {
   });
 }
 
+function initNavigation() {
+  const viewStudio = document.getElementById("view-studio");
+  const viewTelemetry = document.getElementById("view-telemetry");
+  const btnOpenTelemetry = document.getElementById("menu-btn-telemetry");
+  const btnBackToStudio = document.getElementById("btn-back-to-studio");
+  const headerMoreMenu = document.getElementById("header-more-menu");
+
+  function setView(viewName) {
+    if (viewName === "telemetry") {
+      if (viewStudio) viewStudio.hidden = true;
+      if (viewTelemetry) viewTelemetry.hidden = false;
+      window.scrollTo({ top: 0, behavior: "instant" });
+    } else {
+      if (viewStudio) viewStudio.hidden = false;
+      if (viewTelemetry) viewTelemetry.hidden = true;
+    }
+  }
+
+  function handleHash() {
+    if (window.location.hash === "#telemetry") {
+      setView("telemetry");
+    } else {
+      setView("studio");
+    }
+  }
+
+  btnOpenTelemetry?.addEventListener("click", () => {
+    if (headerMoreMenu) headerMoreMenu.open = false;
+    window.location.hash = "#telemetry";
+  });
+
+  btnBackToStudio?.addEventListener("click", () => {
+    if (window.location.hash === "#telemetry") {
+      window.history.back();
+    } else {
+      window.location.hash = "";
+    }
+  });
+
+  window.addEventListener("hashchange", handleHash);
+  handleHash();
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   initAndroidApkBanner();
+  initNavigation();
 
   const debugConsole = new DebugConsole();
 

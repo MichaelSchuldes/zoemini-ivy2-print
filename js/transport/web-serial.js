@@ -16,12 +16,14 @@ export class ZoeminiSerialTransport {
   /**
    * @param {Object} options
    * @param {string|null} [options.targetAddress]
+   * @param {string|null} [options.deviceName]
    * @param {(direction: 'TX'|'RX'|'INFO'|'ERR', bytes: Uint8Array|null, note?: string) => void} [options.onTraffic]
    * @param {() => void} [options.onDisconnect]
    */
-  constructor({ targetAddress = null, onTraffic = null, onDisconnect = null } = {}) {
+  constructor({ targetAddress = null, deviceName = null, onTraffic = null, onDisconnect = null } = {}) {
     this.port = null;
     this.targetAddress = targetAddress;
+    this.deviceName = deviceName;
     this.reader = null;
     this.writer = null;
     this.rxBuffer = new Uint8Array(0);
@@ -80,12 +82,14 @@ export class ZoeminiSerialTransport {
         throw new ClientUnavailableError(res || "Failed to connect to printer via native Bluetooth.");
       }
 
+      this.deviceName =
+        this.deviceName || (target && target.name) || address || "Canon Mini Printer";
       this.connected = true;
       if (this.onTraffic) {
         this.onTraffic(
           "INFO",
           null,
-          `Opened Native Android RFCOMM stream to ${address}`
+          `Opened Native Android RFCOMM stream to ${this.deviceName} (${address})`
         );
       }
       return;
@@ -99,6 +103,7 @@ export class ZoeminiSerialTransport {
     // baudRate is required by Web Serial API syntax, though ignored over Bluetooth RFCOMM
     await this.port.open({ baudRate: 115200 });
 
+    this.deviceName = this.deviceName || "Zoemini 2 / Ivy 2";
     this.port.addEventListener("disconnect", this._boundDisconnectHandler);
     this.rxBuffer = new Uint8Array(0);
     this.reader = this.port.readable.getReader();
@@ -106,7 +111,7 @@ export class ZoeminiSerialTransport {
     this.connected = true;
 
     if (this.onTraffic) {
-      this.onTraffic("INFO", null, "Opened Web Serial RFCOMM stream (115200 / SPP Channel 1)");
+      this.onTraffic("INFO", null, `Opened Web Serial RFCOMM stream to ${this.deviceName} (115200 / SPP Channel 1)`);
     }
   }
 

@@ -33,6 +33,9 @@ export class StatusPanel {
     this.getUiPaperMode = getUiPaperMode;
 
     this.mockTransportInstance = null;
+    this.connectedDeviceName = null;
+    this.connectingDeviceName = null;
+    this.isConnecting = false;
 
     this._cacheDom();
     this._checkBrowserCompatibility();
@@ -42,6 +45,11 @@ export class StatusPanel {
   _cacheDom() {
     this.compatBanner = document.getElementById("compat-warning-banner");
     this.compatMessage = document.getElementById("compat-warning-text");
+
+    // Header connection indicators
+    this.headerDeviceBadge = document.getElementById("header-connected-device");
+    this.headerDeviceName = document.getElementById("header-device-name");
+    this.headerSpinner = document.getElementById("header-conn-spinner");
 
     this.connBadge = document.getElementById("connection-status-badge");
     this.btnConnectBt = document.getElementById("btn-connect-bt");
@@ -230,8 +238,65 @@ export class StatusPanel {
     });
   }
 
+  _renderHeaderState() {
+    const isConn = Boolean(this.printer?.connected);
+    const isConnecting = Boolean(this.isConnecting);
+
+    if (this.headerSpinner) {
+      this.headerSpinner.hidden = !isConnecting;
+    }
+
+    if (this.btnConnectBt) {
+      this.btnConnectBt.disabled = isConnecting;
+      if (isConnecting) {
+        this.btnConnectBt.innerHTML = `<span class="spinner" aria-hidden="true"></span> Connecting...`;
+      } else {
+        this.btnConnectBt.innerHTML = `Connect Bluetooth (Web Serial)`;
+      }
+      this.btnConnectBt.hidden = isConn;
+    }
+
+    if (this.btnDisconnect) {
+      this.btnDisconnect.hidden = !isConn;
+    }
+
+    if (this.btnConnectSim) {
+      this.btnConnectSim.disabled = isConnecting;
+      this.btnConnectSim.hidden = isConn;
+    }
+
+    if (this.headerDeviceBadge && this.headerDeviceName) {
+      if (isConn && this.connectedDeviceName) {
+        this.headerDeviceName.textContent = this.connectedDeviceName;
+        this.headerDeviceBadge.hidden = false;
+      } else if (isConnecting && this.connectingDeviceName) {
+        this.headerDeviceName.textContent = this.connectingDeviceName;
+        this.headerDeviceBadge.hidden = false;
+      } else {
+        this.headerDeviceBadge.hidden = true;
+      }
+    }
+
+    if (this.connBadge) {
+      if (isConnecting) {
+        this.connBadge.textContent = "Connecting...";
+        this.connBadge.className = "status-pill pill-warn";
+      } else if (!isConn) {
+        this.connBadge.textContent = "Disconnected";
+        this.connBadge.className = "status-pill pill-neutral";
+      } else if (this.printer.isSimulator) {
+        this.connBadge.textContent = "Simulator Active";
+        this.connBadge.className = "status-pill pill-sim";
+      } else {
+        this.connBadge.textContent = "Connected";
+        this.connBadge.className = "status-pill pill-ok";
+      }
+    }
+  }
+
   async connectHardware() {
     let chosenAddress = null;
+    let chosenName = null;
 
     if (typeof window !== "undefined" && window.AndroidBluetoothSerial) {
       let devices = [];
@@ -255,39 +320,46 @@ export class StatusPanel {
         return;
       }
       chosenAddress = selected.address;
+      chosenName = selected.name || "Canon Mini Printer";
     }
 
-    // Show progress spinner and update status badge
-    this.btnConnectBt.disabled = true;
-    const origBtnHtml = this.btnConnectBt.innerHTML;
-    this.btnConnectBt.innerHTML = `<span class="spinner" aria-hidden="true"></span> Connecting...`;
-    this.connBadge.textContent = "Connecting...";
-    this.connBadge.className = "status-pill pill-warn";
+    this.isConnecting = true;
+    this.connectingDeviceName = chosenName || "Zoemini 2 / Ivy 2";
+    this._renderHeaderState();
 
     try {
       const transport = new ZoeminiSerialTransport({
         targetAddress: chosenAddress,
+        deviceName: chosenName,
         onTraffic: (dir, bytes, note) => this.debugConsole.logTraffic(dir, bytes, note),
         onDisconnect: () => {
+          this.connectedDeviceName = null;
           this.printer.disconnect();
+          this._renderHeaderState();
           this.showToast("Bluetooth connection closed.", "warn");
         },
       });
       await this.printer.connect(transport, false);
+      this.connectedDeviceName = transport.deviceName || chosenName || "Zoemini 2 / Ivy 2";
       this.showToast("Connected to Zoemini 2 / Ivy 2 over Bluetooth RFCOMM!", "success");
     } catch (err) {
+      this.connectedDeviceName = null;
       if (err && err.name !== "NotFoundError") {
         this.showToast(err.message || "Failed to connect to printer.", "error");
       }
     } finally {
-      this.btnConnectBt.disabled = false;
-      this.btnConnectBt.innerHTML = origBtnHtml;
+      this.isConnecting = false;
+      this.connectingDeviceName = null;
+      this._renderHeaderState();
       if (this.onConnectionChanged) this.onConnectionChanged();
     }
   }
 
   async connectSimulator() {
-    this.btnConnectSim.disabled = true;
+    this.isConnecting = true;
+    this.connectingDeviceName = "Hardware Simulator";
+    this._renderHeaderState();
+
     try {
       this.mockTransportInstance = new MockZoeminiTransport({
         onTraffic: (dir, bytes, note) => this.debugConsole.logTraffic(dir, bytes, note),
@@ -305,17 +377,23 @@ export class StatusPanel {
         this.simSelectPaper.value = this.mockTransportInstance.simState.loadedPaperMode;
       }
       await this.printer.connect(this.mockTransportInstance, true);
+      this.connectedDeviceName = "Hardware Simulator";
       this.showToast("Connected to Zoemini 2 / Ivy 2 Hardware Simulator.", "success");
     } catch (err) {
+      this.connectedDeviceName = null;
       this.showToast(err.message || "Simulator error.", "error");
     } finally {
-      this.btnConnectSim.disabled = false;
+      this.isConnecting = false;
+      this.connectingDeviceName = null;
+      this._renderHeaderState();
       if (this.onConnectionChanged) this.onConnectionChanged();
     }
   }
 
   async disconnect() {
+    this.connectedDeviceName = null;
     await this.printer.disconnect();
+    this._renderHeaderState();
     this.showToast("Disconnected from printer.", "info");
     if (this.onConnectionChanged) this.onConnectionChanged();
   }
@@ -331,22 +409,8 @@ export class StatusPanel {
       this.selectPaperOverride.value = tel.paperTypeOverride;
     }
 
-    if (this.connBadge) {
-      if (!isConn) {
-        this.connBadge.textContent = "Disconnected";
-        this.connBadge.className = "status-pill pill-neutral";
-      } else if (tel.isSimulator) {
-        this.connBadge.textContent = "Simulator Active";
-        this.connBadge.className = "status-pill pill-sim";
-      } else {
-        this.connBadge.textContent = "Connected (RFCOMM)";
-        this.connBadge.className = "status-pill pill-ok";
-      }
-    }
+    this._renderHeaderState();
 
-    if (this.btnConnectBt) this.btnConnectBt.hidden = isConn;
-    if (this.btnConnectSim) this.btnConnectSim.hidden = isConn;
-    if (this.btnDisconnect) this.btnDisconnect.hidden = !isConn;
     if (this.btnRefreshStatus) this.btnRefreshStatus.disabled = !isConn;
     if (this.btnRebootPrinter) this.btnRebootPrinter.disabled = !isConn;
     if (this.selectAutoOff) this.selectAutoOff.disabled = !isConn;

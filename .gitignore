@@ -11,3 +11,5 @@ android/app/build/
 .DS_Store
 Thumbs.db
 *.log
+local.properties
+android/local.properties
