@@ -2,6 +2,10 @@
 
 A **100% client-side, zero-backend web application** for printing photos, vector SVGs, and PDFs directly from your browser to a **Zoemini 2 (`PV-223`)** or **Ivy 2** pocket ZINK printer over Bluetooth Classic RFCOMM using the **Web Serial API** (`navigator.serial`).
 
+[![Build Android APK](https://github.com/MichaelSchuldes/zoemini-ivy2-print/actions/workflows/build-apk.yml/badge.svg)](https://github.com/MichaelSchuldes/zoemini-ivy2-print/actions/workflows/build-apk.yml)
+[![Download Android APK](https://img.shields.io/badge/Download%20APK-Latest%20Release-brightgreen?logo=android&logoColor=white)](https://github.com/MichaelSchuldes/zoemini-ivy2-print/releases/latest/download/com.michaelschuldes.zoemini-ivy2-print.apk)
+[![GitHub Releases](https://img.shields.io/github/v/release/MichaelSchuldes/zoemini-ivy2-print?color=blue&logo=github)](https://github.com/MichaelSchuldes/zoemini-ivy2-print/releases)
+
 > **Built with Gemini 4** • Protocol implementation based on the reverse-engineering work in **[dtgreene/ivy2](https://github.com/dtgreene/ivy2)**.
 
 ---
@@ -80,7 +84,10 @@ We provide a lightweight, 100% self-contained Android APK that bundles this stud
 - **Android Gallery Sharing:** Integrates directly with Android's system share sheet (`ACTION_SEND` and `ACTION_SEND_MULTIPLE`). Share 1 photo into the active slot, or share 2 photos at once to automatically populate both stickers in Dual Round mode!
 - **100% Offline:** All web assets and PDF rendering engines are packaged directly inside the APK assets via `WebViewAssetLoader`.
 
-You can download the APK from the [GitHub Releases](https://github.com/MichaelSchuldes/zoemini-ivy2-print/releases) page or build it using the included GitHub Actions workflow.
+> [!TIP]
+> **Download the Android APK:**
+> - 📲 **[Direct Download: `com.michaelschuldes.zoemini-ivy2-print.apk`](https://github.com/MichaelSchuldes/zoemini-ivy2-print/releases/latest/download/com.michaelschuldes.zoemini-ivy2-print.apk)** (Latest Release Asset)
+> - 📦 **[View All GitHub Releases](https://github.com/MichaelSchuldes/zoemini-ivy2-print/releases)**
 
 ---
 
