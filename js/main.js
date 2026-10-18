@@ -101,9 +101,39 @@ function initNavigation() {
   handleHash();
 }
 
+function initMobileStudioTabs() {
+  const tabMedia = document.getElementById("tab-btn-media");
+  const tabCrop = document.getElementById("tab-btn-crop");
+  const colLeft = document.querySelector(".col-left");
+  const colRight = document.querySelector(".col-right");
+
+  if (!tabMedia || !tabCrop || !colLeft || !colRight) return;
+
+  function switchTab(activeTab) {
+    if (activeTab === "media") {
+      tabMedia.classList.add("active");
+      tabCrop.classList.remove("active");
+      colLeft.classList.remove("mobile-tab-hidden");
+      colRight.classList.add("mobile-tab-hidden");
+    } else {
+      tabCrop.classList.add("active");
+      tabMedia.classList.remove("active");
+      colRight.classList.remove("mobile-tab-hidden");
+      colLeft.classList.add("mobile-tab-hidden");
+    }
+  }
+
+  tabMedia.addEventListener("click", () => switchTab("media"));
+  tabCrop.addEventListener("click", () => switchTab("crop"));
+
+  // Default to media tab on mobile
+  switchTab("media");
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   initAndroidApkBanner();
   initNavigation();
+  initMobileStudioTabs();
 
   const debugConsole = new DebugConsole();
 
