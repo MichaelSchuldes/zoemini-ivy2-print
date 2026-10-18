@@ -812,12 +812,14 @@ export class PreviewEditor {
 
     if (this.activeSlotLabel) {
       if (!isDualRound) {
-        this.activeSlotLabel.textContent = "Editing: Full 2×3\" Sheet";
+        this.activeSlotLabel.textContent = "Full Sheet";
+        this.activeSlotLabel.classList.add("slot-badge-full");
       } else {
         this.activeSlotLabel.textContent =
           this.state.activeSlot === "slot1"
-            ? "Editing: Sticker #1 (Top)"
-            : "Editing: Sticker #2 (Bottom)";
+            ? "Sticker #1 (Top)"
+            : "Sticker #2 (Bottom)";
+        this.activeSlotLabel.classList.remove("slot-badge-full");
       }
     }
 
@@ -950,7 +952,8 @@ export class PreviewEditor {
         if (this.payloadSizeBadge) {
           const kb = (res.jpegBytes.length / 1024).toFixed(1);
           const chunks = Math.ceil(res.jpegBytes.length / 990);
-          this.payloadSizeBadge.textContent = `ZINK Output: 640×1616 (180°) • ${kb} KB (${chunks} RFCOMM chunks)`;
+          this.payloadSizeBadge.textContent = `640×1616 • ${kb} KB`;
+          this.payloadSizeBadge.title = `ZINK Output: 640×1616 (180°) • ${kb} KB in ${chunks} RFCOMM chunks`;
         }
       } catch (_) {
         // Ignore transient encoding errors
