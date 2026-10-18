@@ -71,6 +71,12 @@ export class StatusPanel {
     this.simChkCover = document.getElementById("sim-chk-cover");
     this.simChkNoPaper = document.getElementById("sim-chk-nopaper");
     this.simChkSmartSheet = document.getElementById("sim-chk-smartsheet");
+
+    // Bluetooth device selection modal
+    this.deviceModal = document.getElementById("bt-device-modal");
+    this.deviceList = document.getElementById("bt-device-list");
+    this.btnCloseDeviceModal = document.getElementById("btn-close-device-modal");
+    this.btnCancelDeviceModal = document.getElementById("btn-cancel-device-modal");
   }
 
   _checkBrowserCompatibility() {
@@ -175,10 +181,92 @@ export class StatusPanel {
     if (this.simChkSmartSheet) this.simChkSmartSheet.addEventListener("change", syncSimFaults);
   }
 
+  selectDeviceModal(devices) {
+    return new Promise((resolve) => {
+      if (!this.deviceModal || !this.deviceList) {
+        resolve(devices[0] || null);
+        return;
+      }
+
+      this.deviceList.innerHTML = "";
+      devices.forEach((dev) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "device-item";
+
+        const isPrinter = /(canon|zoemini|ivy|mini printer)/i.test(dev.name || "");
+        item.innerHTML = `
+          <div class="device-info">
+            <span class="device-name">${dev.name || "Unknown Device"}</span>
+            <span class="device-address">${dev.address}</span>
+          </div>
+          ${isPrinter ? '<span class="device-badge">Printer</span>' : ""}
+        `;
+
+        item.addEventListener("click", () => {
+          this.deviceModal.hidden = true;
+          cleanup();
+          resolve(dev);
+        });
+
+        this.deviceList.appendChild(item);
+      });
+
+      const onCancel = () => {
+        this.deviceModal.hidden = true;
+        cleanup();
+        resolve(null);
+      };
+
+      const cleanup = () => {
+        this.btnCloseDeviceModal?.removeEventListener("click", onCancel);
+        this.btnCancelDeviceModal?.removeEventListener("click", onCancel);
+      };
+
+      this.btnCloseDeviceModal?.addEventListener("click", onCancel);
+      this.btnCancelDeviceModal?.addEventListener("click", onCancel);
+
+      this.deviceModal.hidden = false;
+    });
+  }
+
   async connectHardware() {
+    let chosenAddress = null;
+
+    if (typeof window !== "undefined" && window.AndroidBluetoothSerial) {
+      let devices = [];
+      try {
+        devices = JSON.parse(window.AndroidBluetoothSerial.getBondedDevices() || "[]");
+      } catch (e) {
+        console.warn("Failed to parse bonded devices", e);
+      }
+
+      if (devices.length === 0) {
+        this.showToast(
+          "No paired Bluetooth devices found. Please pair your Zoemini in Android Bluetooth settings first.",
+          "warn"
+        );
+        return;
+      }
+
+      const selected = await this.selectDeviceModal(devices);
+      if (!selected) {
+        // User cancelled selection modal
+        return;
+      }
+      chosenAddress = selected.address;
+    }
+
+    // Show progress spinner and update status badge
     this.btnConnectBt.disabled = true;
+    const origBtnHtml = this.btnConnectBt.innerHTML;
+    this.btnConnectBt.innerHTML = `<span class="spinner" aria-hidden="true"></span> Connecting...`;
+    this.connBadge.textContent = "Connecting...";
+    this.connBadge.className = "status-pill pill-warn";
+
     try {
       const transport = new ZoeminiSerialTransport({
+        targetAddress: chosenAddress,
         onTraffic: (dir, bytes, note) => this.debugConsole.logTraffic(dir, bytes, note),
         onDisconnect: () => {
           this.printer.disconnect();
@@ -193,6 +281,7 @@ export class StatusPanel {
       }
     } finally {
       this.btnConnectBt.disabled = false;
+      this.btnConnectBt.innerHTML = origBtnHtml;
       if (this.onConnectionChanged) this.onConnectionChanged();
     }
   }

@@ -1,0 +1,13 @@
+# Android build intermediates
+.gradle/
+build/
+android/.gradle/
+android/build/
+android/app/build/
+*.apk
+*.aab
+
+# Local / OS files
+.DS_Store
+Thumbs.db
+*.log

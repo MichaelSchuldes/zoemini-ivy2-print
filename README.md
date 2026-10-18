@@ -32,17 +32,19 @@ A **100% client-side, zero-backend web application** for printing photos, vector
 ## 🚀 Quick Start
 
 ### 1. Browser Requirements
-Because the Zoemini 2 / Ivy 2 (`PV-223`) communicates over **Bluetooth Classic SPP (RFCOMM)** (UUID `00001101-0000-1000-8000-00805f9b34fb`), you need a browser that supports the **Web Serial API** (`navigator.serial`):
+Because the Zoemini 2 / Ivy 2 (`PV-223`) communicates over **Bluetooth Classic SPP (RFCOMM)** (UUID `00001101-0000-1000-8000-00805f9b34fb`), desktop web connections require a browser supporting the **Web Serial API** (`navigator.serial`):
 - **Google Chrome** / **Chromium** (v117+ recommended)
 - **Microsoft Edge** (v117+)
 - **Opera**
 
-### 2. Pairing the Printer
+---
 
-#### Windows / macOS / ChromeOS / Android
-1. Turn on your **Zoemini 2 / Ivy 2** (hold the power button until the LED flashes/lights up).
+### 2. Pairing & Connection by Platform
+
+#### Windows / macOS / ChromeOS
+1. Turn on your **Zoemini 2 / Ivy 2** (hold the power button until the LED illuminates).
 2. Pair the printer in your OS Bluetooth settings.
-3. Click **Connect Bluetooth (Web Serial)** in the web app and select the Zoemini 2 / Ivy 2 serial port.
+3. Open the web app in Chrome/Edge, click **Connect Bluetooth (Web Serial)**, and select your printer.
 
 #### Linux (BlueZ `/dev/rfcomm0`)
 On Linux, Chromium's chooser often disconnects if it tries to open a raw Bluetooth socket directly without an active RFCOMM TTY binding. Bind the printer to `/dev/rfcomm0` first:
@@ -58,25 +60,27 @@ Then click **Connect Bluetooth (Web Serial)** in the browser and select **`rfcom
 
 ---
 
-## 📱 Android PWA & Share Sheet Integration (`Web Share Target API`)
+### 📱 Android: The Bluetooth Pairing Issue & Solution
 
-This app is configured as an installable **Progressive Web App (PWA)** using the **Web Share Target API (Level 2 — Files)** via [`manifest.json`](file:///home/schuldes/Projects/zoeminiweb/manifest.json) and [`sw.js`](file:///home/schuldes/Projects/zoeminiweb/sw.js), and displays a first-use banner on Android browsers highlighting the PWA benefits.
+If you use Android, you may notice three common issues when trying to connect through normal means:
 
-### How It Works
-1. **Manifest (`manifest.json`):** Declares a `share_target` with `"method": "POST"` and `"enctype": "multipart/form-data"` accepting `image/*`, `.svg`, and `.pdf` files under `shared_images`.
-2. **Service Worker (`sw.js`):** Intercepts incoming `POST /share-target` requests from Android, stores the shared file(s) in the browser's `shared-media` Cache Storage (`/shared-image-temp` and optional `/shared-image-temp-2`), and issues an `HTTP 303 See Other` redirect to `./?received_share=true`.
-3. **Frontend (`js/main.js`):** Detects `?received_share=true` on launch, retrieves the cached file(s), deletes the temporary cache entries, and loads the media directly into the print editor:
-   - **Share 1 photo/SVG/PDF:** Loads directly into the active slot (`Slot #1` or `Slot #2`).
-   - **Share 2 photos at once:** Automatically switches the editor to **2× Round Cutouts (`ZP-2030-2C`)** mode and loads both photos into **Sticker #1 (Top)** and **Sticker #2 (Bottom)**!
+1. **Why Android System Bluetooth Settings says "Couldn't Connect":**
+   Android's system Bluetooth settings menu is designed only for system-managed profiles: Audio (A2DP), Phone Calls (HFP), and Keyboards/Mice (HID). Android **does not have an OS-level daemon for SPP (Serial Port Profile)**. When you tap the printer in Android's Bluetooth menu, the phone attempts to connect via audio/input profiles, which the printer rejects. **This is normal:** on Android, SPP devices are paired in settings, but the actual connection is established on-demand by an app.
+2. **Why Chrome for Android cannot connect in a normal browser tab:**
+   - **Web Bluetooth (`navigator.bluetooth`):** Only supports Bluetooth Low Energy (BLE) GATT services. The Zoemini 2 uses Bluetooth Classic RFCOMM and is invisible to Web Bluetooth.
+   - **Web Serial (`navigator.serial`):** Chrome on Android requires the runtime `BLUETOOTH_CONNECT` ("Nearby devices") permission and relies exclusively on already-bonded devices.
+3. **Exclusive Connection Lock:**
+   The Zoemini 2 hardware only accepts **one active Bluetooth connection at a time**. If your printer is connected to your Linux/PC computer, or if the official Canon Mini Print app (`com.canon.cebm.miniprint.android.us`) is running in the background on your phone, other connection attempts will fail with a socket timeout (`read ret: -1`). Ensure previous apps are closed.
 
-### Important Android Requirements & Gotchas
-1. **The PWA Must Be Installed (WebAPK):**
-   - The app will **not** appear in the Android system share sheet if you only view the website in a Chrome tab.
-   - Open the site in Chrome on Android and tap **"Install App"** (in the top banner or Chrome's menu → **"Add to Home screen"**). Chrome builds and installs a native **WebAPK** on Android that registers the `<intent-filter>` for `android.intent.action.SEND` (`image/*`).
-2. **HTTPS is Mandatory:**
-   - Service Workers and Web Share Target require a secure context (`https://`, such as your deployed `github.io` site).
-3. **Updating Existing Installations:**
-   - If you already installed the PWA before `share_target` was added to `manifest.json`, Android won't immediately register the new share intent filter (Chrome updates WebAPKs periodically, usually within 24 hours). For immediate testing, **uninstall the PWA from Android and reinstall it**.
+#### 🌟 Solution: The Standalone Android Companion APK (`com.michaelschuldes.zoemini-ivy2-print`)
+
+We provide a lightweight, 100% self-contained Android APK that bundles this studio with a native **Insecure RFCOMM Bluetooth bridge**:
+- **Bypasses OS limitations:** Opens an insecure RFCOMM socket directly to channel 1 (`BluetoothDevice.createInsecureRfcommSocketToServiceRecord`), matching the exact connection technique used by the official Canon app.
+- **In-App Device Chooser:** Displays a device selection dialog with your paired Bluetooth devices and shows a live progress spinner during connection.
+- **Android Gallery Sharing:** Integrates directly with Android's system share sheet (`ACTION_SEND` and `ACTION_SEND_MULTIPLE`). Share 1 photo into the active slot, or share 2 photos at once to automatically populate both stickers in Dual Round mode!
+- **100% Offline:** All web assets and PDF rendering engines are packaged directly inside the APK assets via `WebViewAssetLoader`.
+
+You can download the APK from the [GitHub Releases](https://github.com/MichaelSchuldes/zoemini-ivy2-print/releases) page or build it using the included GitHub Actions workflow.
 
 ---
 

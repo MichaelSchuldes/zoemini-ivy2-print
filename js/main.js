@@ -8,7 +8,7 @@ import { DebugConsole } from "./ui/debug-console.js";
 import { StatusPanel } from "./ui/status-panel.js";
 import { PreviewEditor } from "./ui/preview-editor.js";
 
-const PWA_BANNER_DISMISSED_KEY = "zoemini2_android_pwa_banner_dismissed_v1";
+const APK_BANNER_DISMISSED_KEY = "zoemini2_android_apk_banner_dismissed_v1";
 
 function showToast(message, type = "info") {
   const container = document.getElementById("toast-container");
@@ -25,79 +25,41 @@ function showToast(message, type = "info") {
   }, 4200);
 }
 
-function initAndroidPwaBanner() {
-  const banner = document.getElementById("android-pwa-banner");
-  const btnInstall = document.getElementById("btn-install-pwa");
-  const btnDismiss = document.getElementById("btn-dismiss-pwa-banner");
+function initAndroidApkBanner() {
+  const banner = document.getElementById("android-apk-banner");
+  const btnDismiss = document.getElementById("btn-dismiss-apk-banner");
   if (!banner) return;
 
-  const isAndroid = /Android/i.test(navigator.userAgent || "");
-  const isStandalone =
-    window.matchMedia?.("(display-mode: standalone)")?.matches ||
-    window.navigator.standalone === true;
+  // If running inside the native Android WebView bridge, hide the web hint banner
+  if (typeof window !== "undefined" && window.AndroidBluetoothSerial) {
+    banner.hidden = true;
+    return;
+  }
 
+  const isAndroid = /Android/i.test(navigator.userAgent || "");
   let isDismissed = false;
   try {
-    isDismissed = localStorage.getItem(PWA_BANNER_DISMISSED_KEY) === "1";
+    isDismissed = localStorage.getItem(APK_BANNER_DISMISSED_KEY) === "1";
   } catch (_) {
     // Ignore storage restriction
   }
 
-  let deferredInstallPrompt = null;
-
-  if (isAndroid && !isStandalone && !isDismissed) {
+  if (isAndroid && !isDismissed) {
     banner.hidden = false;
   }
-
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredInstallPrompt = e;
-    if (btnInstall) {
-      btnInstall.hidden = false;
-    }
-    if (isAndroid && !isStandalone && !isDismissed) {
-      banner.hidden = false;
-    }
-  });
-
-  btnInstall?.addEventListener("click", async () => {
-    if (!deferredInstallPrompt) return;
-    deferredInstallPrompt.prompt();
-    const { outcome } = await deferredInstallPrompt.userChoice;
-    deferredInstallPrompt = null;
-    if (btnInstall) btnInstall.hidden = true;
-    if (outcome === "accepted") {
-      banner.hidden = true;
-      try {
-        localStorage.setItem(PWA_BANNER_DISMISSED_KEY, "1");
-      } catch (_) {
-        // Ignore
-      }
-    }
-  });
 
   btnDismiss?.addEventListener("click", () => {
     banner.hidden = true;
     try {
-      localStorage.setItem(PWA_BANNER_DISMISSED_KEY, "1");
+      localStorage.setItem(APK_BANNER_DISMISSED_KEY, "1");
     } catch (_) {
       // Ignore
     }
-  });
-
-  window.addEventListener("appinstalled", () => {
-    banner.hidden = true;
-    try {
-      localStorage.setItem(PWA_BANNER_DISMISSED_KEY, "1");
-    } catch (_) {
-      // Ignore
-    }
-    showToast("App installed! You can now share photos directly from your Android Gallery.", "success");
   });
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  initAndroidPwaBanner();
+  initAndroidApkBanner();
 
   const debugConsole = new DebugConsole();
 
@@ -207,6 +169,25 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     }
   })();
+
+  // Listen for native Android share sheet intent events
+  window.addEventListener("android-shared-media", async (e) => {
+    try {
+      const { slot, dataUrl } = e.detail;
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], "shared-photo.jpg", { type: blob.type || "image/jpeg" });
+      if (previewEditor) {
+        if (slot === "slot2") {
+          previewEditor.setPaperMode(PAPER_MODE_DUAL_ROUND);
+        }
+        await previewEditor.loadFileIntoSlot(slot, file);
+        showToast(`Loaded shared photo into ${slot === "slot2" ? "Sticker #2" : "editor"}.`, "success");
+      }
+    } catch (err) {
+      console.warn("Failed to process android-shared-media:", err);
+    }
+  });
 
   // Expose debug handle on window for console inspection / automated verification
   window.__zoeminiApp = {
