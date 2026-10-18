@@ -104,12 +104,34 @@ function initNavigation() {
 function initMobileStudioTabs() {
   const tabMedia = document.getElementById("tab-btn-media");
   const tabCrop = document.getElementById("tab-btn-crop");
+  const tabToggle = document.getElementById("tab-btn-toggle");
+  const toggleIcon = document.getElementById("tab-toggle-icon");
   const colLeft = document.querySelector(".col-left");
   const colRight = document.querySelector(".col-right");
 
   if (!tabMedia || !tabCrop || !colLeft || !colRight) return;
 
+  let isCollapsed = false;
+
+  function setCollapsed(collapsed) {
+    isCollapsed = collapsed;
+    document.body.classList.toggle("mobile-controls-collapsed", isCollapsed);
+    if (tabToggle) {
+      tabToggle.classList.toggle("collapsed", isCollapsed);
+      tabToggle.title = isCollapsed ? "Expand controls" : "Minimize controls for full preview";
+      tabToggle.setAttribute("aria-expanded", !isCollapsed);
+    }
+    if (toggleIcon) {
+      toggleIcon.innerHTML = isCollapsed
+        ? '<path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z"/>'
+        : '<path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>';
+    }
+  }
+
   function switchTab(activeTab) {
+    if (isCollapsed) {
+      setCollapsed(false);
+    }
     if (activeTab === "media") {
       tabMedia.classList.add("active");
       tabCrop.classList.remove("active");
@@ -123,8 +145,27 @@ function initMobileStudioTabs() {
     }
   }
 
-  tabMedia.addEventListener("click", () => switchTab("media"));
-  tabCrop.addEventListener("click", () => switchTab("crop"));
+  tabMedia.addEventListener("click", () => {
+    if (tabMedia.classList.contains("active") && !isCollapsed) {
+      setCollapsed(true);
+    } else {
+      switchTab("media");
+    }
+  });
+
+  tabCrop.addEventListener("click", () => {
+    if (tabCrop.classList.contains("active") && !isCollapsed) {
+      setCollapsed(true);
+    } else {
+      switchTab("crop");
+    }
+  });
+
+  if (tabToggle) {
+    tabToggle.addEventListener("click", () => {
+      setCollapsed(!isCollapsed);
+    });
+  }
 
   // Default to media tab on mobile
   switchTab("media");

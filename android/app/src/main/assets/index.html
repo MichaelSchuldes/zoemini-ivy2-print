@@ -251,21 +251,22 @@
     <section class="col-preview">
       <div id="card-preview-stage" class="panel-card preview-stage-card">
         <div class="preview-top-bar">
-          <h2 class="panel-title">2. Interactive 2×3" Print Preview</h2>
-          <span id="active-slot-editing-badge" class="status-pill pill-sim">
-            Editing: Full 2×3" Sheet
-          </span>
+          <div class="preview-title-group">
+            <h2 class="panel-title">2. Preview</h2>
+            <span id="active-slot-editing-badge" class="status-pill pill-sim">
+              Full 2×3"
+            </span>
+          </div>
+          <div id="payload-size-badge" class="payload-badge">
+            640×1616 • Calculating...
+          </div>
         </div>
 
         <div class="preview-canvas-wrapper">
           <canvas id="zink-preview-canvas" width="1280" height="1920"></canvas>
-        </div>
-
-        <div id="canvas-mode-caption" class="canvas-caption">
-          ZP-2030 Full 2×3" Sheet Preview (Drag to pan • Pinch or scroll to zoom)
-        </div>
-        <div id="payload-size-badge" class="payload-badge">
-          ZINK Output: 640×1616 (180°) • Calculating...
+          <div id="canvas-mode-caption" class="canvas-floating-hint">
+            Drag to pan • Pinch / scroll to zoom
+          </div>
         </div>
 
         <!-- Print Progress Indicator -->
@@ -297,6 +298,11 @@
           <path d="M17 15h2V7c0-1.1-.9-2-2-2H9v2h8v8zM7 17V1H5v4H1v2h4v10c0 1.1.9 2 2 2h10v4h2v-4h4v-2H7z"/>
         </svg>
         <span>2. Crop &amp; Adjust</span>
+      </button>
+      <button id="tab-btn-toggle" class="mobile-tab-btn-toggle" type="button" title="Minimize controls for full preview" aria-label="Toggle controls drawer">
+        <svg id="tab-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+        </svg>
       </button>
     </div>
 
