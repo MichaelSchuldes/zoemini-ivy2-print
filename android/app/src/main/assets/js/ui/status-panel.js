@@ -110,7 +110,13 @@ export class StatusPanel {
       });
     }
     if (this.btnConnectBt) {
-      this.btnConnectBt.addEventListener("click", () => this.connectHardware());
+      this.btnConnectBt.addEventListener("click", () => {
+        if (this.printer?.connected) {
+          this.disconnect();
+        } else {
+          this.connectHardware();
+        }
+      });
     }
     if (this.btnConnectSim) {
       this.btnConnectSim.addEventListener("click", () => this.connectSimulator());
@@ -250,14 +256,21 @@ export class StatusPanel {
       this.btnConnectBt.disabled = isConnecting;
       if (isConnecting) {
         this.btnConnectBt.innerHTML = `<span class="spinner" aria-hidden="true"></span> Connecting...`;
+        this.btnConnectBt.className = "btn btn-primary";
+        this.btnConnectBt.hidden = false;
+      } else if (isConn) {
+        this.btnConnectBt.textContent = "Disconnect";
+        this.btnConnectBt.className = "btn btn-danger";
+        this.btnConnectBt.hidden = false;
       } else {
-        this.btnConnectBt.innerHTML = `Connect Bluetooth (Web Serial)`;
+        this.btnConnectBt.textContent = "Connect";
+        this.btnConnectBt.className = "btn btn-primary";
+        this.btnConnectBt.hidden = false;
       }
-      this.btnConnectBt.hidden = isConn;
     }
 
     if (this.btnDisconnect) {
-      this.btnDisconnect.hidden = !isConn;
+      this.btnDisconnect.hidden = true;
     }
 
     if (this.btnConnectSim) {
@@ -279,15 +292,18 @@ export class StatusPanel {
 
     if (this.connBadge) {
       if (isConnecting) {
+        this.connBadge.hidden = false;
         this.connBadge.textContent = "Connecting...";
         this.connBadge.className = "status-pill pill-warn";
       } else if (!isConn) {
-        this.connBadge.textContent = "Disconnected";
-        this.connBadge.className = "status-pill pill-neutral";
+        this.connBadge.hidden = true;
+        this.connBadge.textContent = "";
       } else if (this.printer.isSimulator) {
+        this.connBadge.hidden = false;
         this.connBadge.textContent = "Simulator Active";
         this.connBadge.className = "status-pill pill-sim";
       } else {
+        this.connBadge.hidden = false;
         this.connBadge.textContent = "Connected";
         this.connBadge.className = "status-pill pill-ok";
       }

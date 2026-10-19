@@ -127,14 +127,35 @@ body {
   position: absolute;
   right: 0;
   top: calc(100% + 0.45rem);
-  width: 280px;
+  width: 300px;
   max-width: calc(100vw - 1.5rem);
+  max-height: calc(100vh - 4.5rem);
+  overflow-y: auto;
   background: var(--bg-card);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
   padding: 0.75rem;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.72);
   z-index: 60;
+}
+
+.more-menu-details {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.6rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.more-menu-summary {
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.more-menu-summary:hover {
+  color: var(--text-primary);
 }
 
 .more-menu-title {
@@ -1018,7 +1039,7 @@ body {
   aspect-ratio: 2 / 3;
   border-radius: 6px;
   background: #ffffff;
-  cursor: grab;
+  cursor: pointer;
   touch-action: none;
   display: block;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);

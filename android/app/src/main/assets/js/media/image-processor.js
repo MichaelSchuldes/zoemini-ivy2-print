@@ -153,10 +153,6 @@ export function renderCleanComposition(canvas, workspaceState) {
 export function renderInteractivePreview(previewCanvas, workspaceState) {
   renderCleanComposition(previewCanvas, workspaceState);
 
-  if (!workspaceState.showGuides && workspaceState.paperMode !== PAPER_MODE_DUAL_ROUND) {
-    return;
-  }
-
   const ctx = previewCanvas.getContext("2d");
   ctx.save();
 
@@ -191,17 +187,13 @@ export function renderInteractivePreview(previewCanvas, workspaceState) {
 
       // Empty placeholder prompt if no media in this circle slot
       if (!slotMedia) {
-        ctx.fillStyle = "rgba(15, 23, 42, 0.72)";
-        ctx.font = "700 40px system-ui, -apple-system, sans-serif";
+        ctx.save();
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "500 32px system-ui, -apple-system, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(
-          c.id === "slot1" ? "TOP STICKER (#1)" : "BOTTOM STICKER (#2)",
-          c.cx,
-          c.cy - 20
-        );
-        ctx.font = "500 28px system-ui, -apple-system, sans-serif";
-        ctx.fillStyle = "rgba(71, 85, 105, 0.9)";
-        ctx.fillText("Click or drop Image / PDF", c.cx, c.cy + 34);
+        ctx.textBaseline = "middle";
+        ctx.fillText("Tap or click to select image", c.cx, c.cy);
+        ctx.restore();
       }
 
       // Outer print-bleed boundary ring (dotted)
@@ -252,10 +244,23 @@ export function renderInteractivePreview(previewCanvas, workspaceState) {
       ctx.textAlign = "center";
       ctx.fillText(badgeText, c.cx, badgeY + 24);
     }
-  } else if (workspaceState.showGuides) {
-    // Full 2x3" Sheet Guides: Rule of Thirds + 1.5mm ZINK Safe Print Margin
-    const safeMarginX = 1.5 * PX_PER_MM_X;
-    const safeMarginY = 1.5 * PX_PER_MM_Y;
+  } else {
+    // Full 2x3" Sheet Mode
+    const slotMedia = workspaceState.slots.slot1?.media;
+    if (!slotMedia) {
+      ctx.save();
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "500 36px system-ui, -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("Tap or click to select image", PREVIEW_WIDTH / 2, PREVIEW_HEIGHT / 2);
+      ctx.restore();
+    }
+
+    if (workspaceState.showGuides) {
+      // Full 2x3" Sheet Guides: Rule of Thirds + 1.5mm ZINK Safe Print Margin
+      const safeMarginX = 1.5 * PX_PER_MM_X;
+      const safeMarginY = 1.5 * PX_PER_MM_Y;
 
     // Rule of thirds lines
     ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
@@ -287,6 +292,7 @@ export function renderInteractivePreview(previewCanvas, workspaceState) {
       PREVIEW_HEIGHT - safeMarginY * 2
     );
     ctx.setLineDash([]);
+    }
   }
 
   ctx.restore();

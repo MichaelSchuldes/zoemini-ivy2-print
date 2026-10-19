@@ -48,11 +48,11 @@ export class PreviewEditor {
       calibration: loadStickerCalibration(),
       slots: {
         slot1: {
-          media: createSampleMediaSource("photo-card"),
+          media: null,
           transform: createSlotTransformState(),
         },
         slot2: {
-          media: createSampleMediaSource("badge-bottom"),
+          media: null,
           transform: createSlotTransformState(),
         },
       },
@@ -95,10 +95,23 @@ export class PreviewEditor {
 
     this.fileInputSlot1 = document.getElementById("file-input-slot1");
     this.fileInputSlot2 = document.getElementById("file-input-slot2");
+    this.btnSelectSlot1 = document.getElementById("btn-select-slot1");
+    this.btnSelectSlot2 = document.getElementById("btn-select-slot2");
     this.btnClearSlot1 = document.getElementById("btn-clear-slot1");
     this.btnClearSlot2 = document.getElementById("btn-clear-slot2");
     this.btnSampleSlot1 = document.getElementById("btn-sample-slot1");
     this.btnSampleSlot2 = document.getElementById("btn-sample-slot2");
+
+    // Image Selection Modal
+    this.imageModal = document.getElementById("image-modal");
+    this.imageModalTitle = document.getElementById("image-modal-title");
+    this.imageModalSubtitle = document.getElementById("image-modal-subtitle");
+    this.imageModalFileInput = document.getElementById("image-modal-file-input");
+    this.btnImageModalSample = document.getElementById("btn-image-modal-sample");
+    this.btnImageModalClear = document.getElementById("btn-image-modal-clear");
+    this.imageModalMeta = document.getElementById("image-modal-meta");
+    this.btnCloseImageModal = document.getElementById("btn-close-image-modal");
+    this.btnCancelImageModal = document.getElementById("btn-cancel-image-modal");
 
     // Dual-slot helper buttons
     this.btnCopySlot1To2 = document.getElementById("btn-copy-slot1-to-2");
@@ -279,6 +292,55 @@ export class PreviewEditor {
       this.state.slots.slot2.transform = createSlotTransformState();
       this.setActiveSlot("slot2");
       this.requestRender();
+    });
+
+    // Image Selection Modal bindings
+    this.btnSelectSlot1?.addEventListener("click", () => this.openImageModal("slot1"));
+    this.btnSelectSlot2?.addEventListener("click", () => this.openImageModal("slot2"));
+    this.btnCloseImageModal?.addEventListener("click", () => this.closeImageModal());
+    this.btnCancelImageModal?.addEventListener("click", () => this.closeImageModal());
+    this.imageModal?.addEventListener("click", (e) => {
+      if (e.target === this.imageModal) {
+        this.closeImageModal();
+      }
+    });
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && this.imageModal && !this.imageModal.hidden) {
+        this.closeImageModal();
+      }
+    });
+
+    this.imageModalFileInput?.addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      const slot = this.modalTargetSlot || this.state.activeSlot;
+      if (file) {
+        await this.loadFileIntoSlot(slot, file);
+        this.closeImageModal();
+      }
+      e.target.value = "";
+    });
+
+    this.btnImageModalSample?.addEventListener("click", () => {
+      const slot = this.modalTargetSlot || this.state.activeSlot;
+      const preset =
+        this.state.paperMode === PAPER_MODE_DUAL_ROUND
+          ? (slot === "slot2" ? "badge-bottom" : "badge-top")
+          : "photo-card";
+      this.state.slots[slot].media = createSampleMediaSource(preset);
+      this.state.slots[slot].transform = createSlotTransformState();
+      this.setActiveSlot(slot);
+      this.requestRender();
+      this.closeImageModal();
+      this.showToast(`Loaded sample test image into ${slot === "slot1" ? "Slot #1" : "Slot #2"}.`, "info");
+    });
+
+    this.btnImageModalClear?.addEventListener("click", () => {
+      const slot = this.modalTargetSlot || this.state.activeSlot;
+      this.state.slots[slot].media = null;
+      this._syncUiFromState();
+      this.requestRender();
+      this.closeImageModal();
+      this.showToast(`Cleared ${slot === "slot1" ? "Slot #1" : "Slot #2"}.`, "info");
     });
 
     // Dual-slot helpers
@@ -538,9 +600,19 @@ export class PreviewEditor {
       }
     };
 
+    let tapStartX = 0;
+    let tapStartY = 0;
+    let tapStartTime = 0;
+    let tapMoved = false;
+
     this.previewCanvas.addEventListener("pointerdown", (e) => {
       if (e.button !== 0 && e.pointerType === "mouse") return;
       const coords = this._clientToCanvasCoords(e.clientX, e.clientY);
+
+      tapStartX = e.clientX;
+      tapStartY = e.clientY;
+      tapStartTime = Date.now();
+      tapMoved = false;
 
       if (this._activePointers.size === 0) {
         const clickedSlot = hitTestSlot(
@@ -559,6 +631,10 @@ export class PreviewEditor {
         clientY: e.clientY,
       });
 
+      if (this._activePointers.size > 1) {
+        tapMoved = true;
+      }
+
       try {
         this.previewCanvas.setPointerCapture(e.pointerId);
       } catch (_) {
@@ -574,6 +650,13 @@ export class PreviewEditor {
         clientX: e.clientX,
         clientY: e.clientY,
       });
+
+      if (!tapMoved) {
+        const dist = Math.hypot(e.clientX - tapStartX, e.clientY - tapStartY);
+        if (dist > 8) {
+          tapMoved = true;
+        }
+      }
 
       if (!this._gestureState) return;
       const t = this._activeTransform();
@@ -616,16 +699,36 @@ export class PreviewEditor {
       } catch (_) {
         // Ignore
       }
+
+      const isSingleTap = !tapMoved && (Date.now() - tapStartTime < 450);
+
       if (this._activePointers.size === 0) {
         this.previewCanvas.classList.remove("is-dragging");
         this._gestureState = null;
       } else {
+        tapMoved = true;
         initGestureBaseline();
+      }
+
+      if (isSingleTap) {
+        const coords = this._clientToCanvasCoords(e.clientX, e.clientY);
+        const clickedSlot = hitTestSlot(
+          coords.x,
+          coords.y,
+          this.state.paperMode,
+          this.state.calibration
+        );
+        this.openImageModal(clickedSlot);
       }
     };
 
+    const cancelPointer = (e) => {
+      tapMoved = true;
+      endPointer(e);
+    };
+
     this.previewCanvas.addEventListener("pointerup", endPointer);
-    this.previewCanvas.addEventListener("pointercancel", endPointer);
+    this.previewCanvas.addEventListener("pointercancel", cancelPointer);
 
     // Wheel zoom on preview canvas
     this.previewCanvas.addEventListener(
@@ -711,6 +814,57 @@ export class PreviewEditor {
     this.requestRender();
   }
 
+  openImageModal(slotId) {
+    if (this.state.paperMode === PAPER_MODE_FULL) {
+      slotId = "slot1";
+    }
+    this.modalTargetSlot = slotId;
+    this.setActiveSlot(slotId);
+
+    if (this.imageModalTitle) {
+      if (this.state.paperMode === PAPER_MODE_DUAL_ROUND) {
+        this.imageModalTitle.textContent =
+          slotId === "slot1"
+            ? "Select Image — Top Sticker (#1)"
+            : "Select Image — Bottom Sticker (#2)";
+      } else {
+        this.imageModalTitle.textContent = "Select Image — 2×3\" Full Sheet";
+      }
+    }
+
+    if (this.imageModalSubtitle) {
+      if (this.state.paperMode === PAPER_MODE_DUAL_ROUND) {
+        this.imageModalSubtitle.textContent =
+          slotId === "slot1"
+            ? "Choose an image, vector or PDF for the top circular sticker (Ø 33mm):"
+            : "Choose an image, vector or PDF for the bottom circular sticker (Ø 33mm):";
+      } else {
+        this.imageModalSubtitle.textContent =
+          "Choose an image, vector or PDF for the 2×3\" photo print:";
+      }
+    }
+
+    const currentMedia = this.state.slots[slotId]?.media;
+    if (this.imageModalMeta) {
+      this.imageModalMeta.textContent = this._formatSlotMeta(currentMedia);
+    }
+
+    if (this.btnImageModalClear) {
+      this.btnImageModalClear.disabled = !currentMedia;
+    }
+
+    if (this.imageModal) {
+      this.imageModal.hidden = false;
+    }
+  }
+
+  closeImageModal() {
+    if (this.imageModal) {
+      this.imageModal.hidden = true;
+    }
+    this.modalTargetSlot = null;
+  }
+
   async loadFileIntoSlot(slotId, file) {
     try {
       const media = await loadMediaFile(file, 1);
@@ -757,7 +911,7 @@ export class PreviewEditor {
   }
 
   _formatSlotMeta(media) {
-    if (!media) return "No file loaded (blank white)";
+    if (!media) return "No image selected";
     if (media.kind === "pdf") {
       return `${media.name} (${media.width}×${media.height} • Page ${media.currentPage}/${media.numPages})`;
     }
@@ -775,7 +929,6 @@ export class PreviewEditor {
 
     if (this.dualRoundToolbar) this.dualRoundToolbar.hidden = !isDualRound;
     if (this.slot2Card) this.slot2Card.hidden = !isDualRound;
-    if (this.calibrationSection) this.calibrationSection.hidden = !isDualRound;
 
     if (this.slot1Title) {
       this.slot1Title.textContent = isDualRound
@@ -785,8 +938,8 @@ export class PreviewEditor {
 
     if (this.canvasCaption) {
       this.canvasCaption.textContent = isDualRound
-        ? "ZP-2030-2C Dual Round Sticker Preview (Tap Top/Bottom Circle • Drag to pan • Pinch/scroll to zoom)"
-        : "ZP-2030 Full 2×3\" Sheet Preview (Drag to pan • Pinch or scroll to zoom)";
+        ? "ZP-2030-2C Dual Round Stickers (Tap circle to select image • Drag to pan • Pinch/scroll to zoom)"
+        : "ZP-2030 Full 2×3\" Sheet (Tap preview to select image • Drag to pan • Pinch/scroll to zoom)";
     }
 
     // Highlight active slot card
