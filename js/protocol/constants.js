@@ -7,10 +7,13 @@ export const SPP_UUID = "00001101-0000-1000-8000-00805f9b34fb";
 export const PV223_SERVICE_UUID = "00500056-0223-0000-0000-000000000000";
 export const VENDOR_SERVICE_UUID = "e5b152ed-6b46-09e9-4678-665e9a972cbc";
 
+/**
+ * Only the Serial Port Profile (SPP / 0x1101) exposes an active RFCOMM serial server on the printer.
+ * Including non-RFCOMM UUIDs (like BLE discovery or iOS MFi) causes Chromium to list the device
+ * multiple times with conflicting UUIDs in the Web Serial picker.
+ */
 export const ALLOWED_BT_SERVICE_UUIDS = [
   SPP_UUID,
-  PV223_SERVICE_UUID,
-  VENDOR_SERVICE_UUID,
 ];
 
 export const START_CODE = 0x430f; // 17167

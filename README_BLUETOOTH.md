@@ -191,6 +191,8 @@ Because Apple's Mobile Safari does not support Web Serial or Bluetooth SPP:
   ```
 
 ### Windows: Serial Port Fails to Open
+- **Device Must Be "Paired", NOT "Connected" in Windows Settings**: The Zoemini only accepts one RFCOMM connection at a time. If Windows Bluetooth settings currently shows the printer as **Connected**, Windows has already claimed the link or COM port. Disconnect it in Windows Settings (leave it **Paired**), and let the browser initiate the connection when you click **Connect**.
+- **Selecting the Correct Port in the Browser Prompt**: If Chrome shows both a Bluetooth device and virtual COM ports, select either the printer with the Serial Port Profile UUID (`00001101-0000-1000-8000-00805f9b34fb`) or the assigned outgoing COM port (`Standard Serial over Bluetooth link (COMx)`).
 - Check Windows Device Manager under **Ports (COM & LPT)** to ensure the driver is active and not showing an error triangle.
 - In Chrome, ensure no other browser tab is currently holding the COM port open.
 

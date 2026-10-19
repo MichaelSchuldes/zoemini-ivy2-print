@@ -111,7 +111,27 @@ export class ZoeminiSerialTransport {
     });
 
     // baudRate is required by Web Serial API syntax, though ignored over Bluetooth RFCOMM
-    await this.port.open({ baudRate: 115200 });
+    try {
+      await this.port.open({ baudRate: 115200 });
+    } catch (openErr) {
+      if (this.port) {
+        try {
+          await this.port.close().catch(() => {});
+        } catch (_) {}
+        this.port = null;
+      }
+      const msg = openErr && openErr.message ? openErr.message : String(openErr);
+      if (
+        msg.toLowerCase().includes("failed to open") ||
+        msg.toLowerCase().includes("access denied") ||
+        (openErr && openErr.name === "NetworkError")
+      ) {
+        throw new ClientUnavailableError(
+          "Could not open connection to printer. If the printer is showing as 'Connected' in your Windows or Linux Bluetooth settings, disconnect it there first (it should only be 'Paired'), ensure no other application or COM port is using it, and try again."
+        );
+      }
+      throw openErr;
+    }
 
     this.deviceName = this.deviceName || "Zoemini 2 / Ivy 2";
     this.port.addEventListener("disconnect", this._boundDisconnectHandler);
