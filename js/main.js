@@ -9,6 +9,33 @@ import { StatusPanel } from "./ui/status-panel.js";
 import { PreviewEditor } from "./ui/preview-editor.js";
 
 const APK_BANNER_DISMISSED_KEY = "zoemini2_android_apk_banner_dismissed_v1";
+const BT_GUIDE_BANNER_DISMISSED_KEY = "zoemini2_bt_guide_banner_dismissed_v1";
+
+function initBluetoothGuideBanner() {
+  const banner = document.getElementById("bt-guide-banner");
+  const btnDismiss = document.getElementById("btn-dismiss-bt-guide");
+  if (!banner) return;
+
+  let isDismissed = false;
+  try {
+    isDismissed = localStorage.getItem(BT_GUIDE_BANNER_DISMISSED_KEY) === "1";
+  } catch (_) {
+    // Ignore storage restriction
+  }
+
+  if (!isDismissed) {
+    banner.hidden = false;
+  }
+
+  btnDismiss?.addEventListener("click", () => {
+    banner.hidden = true;
+    try {
+      localStorage.setItem(BT_GUIDE_BANNER_DISMISSED_KEY, "1");
+    } catch (_) {
+      // Ignore
+    }
+  });
+}
 
 function showToast(message, type = "info") {
   const container = document.getElementById("toast-container");
@@ -194,6 +221,7 @@ function initMobileStudioTabs() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  initBluetoothGuideBanner();
   initAndroidApkBanner();
   initNavigation();
   initMobileStudioTabs();

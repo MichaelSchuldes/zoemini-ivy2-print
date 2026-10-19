@@ -111,7 +111,7 @@ export class StatusPanel {
     }
     if (this.btnConnectBt) {
       this.btnConnectBt.addEventListener("click", () => {
-        if (this.printer?.connected) {
+        if (this.printer?.isConnected ? this.printer.isConnected() : this.printer?.connected) {
           this.disconnect();
         } else {
           this.connectHardware();
@@ -245,7 +245,7 @@ export class StatusPanel {
   }
 
   _renderHeaderState() {
-    const isConn = Boolean(this.printer?.connected);
+    const isConn = Boolean(this.printer?.isConnected ? this.printer.isConnected() : this.printer?.connected);
     const isConnecting = Boolean(this.isConnecting);
 
     if (this.headerSpinner) {

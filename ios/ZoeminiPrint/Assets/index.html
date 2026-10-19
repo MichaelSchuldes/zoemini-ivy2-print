@@ -58,6 +58,13 @@
             <span>GitHub Repository &amp; APK</span>
           </a>
 
+          <a href="README_BLUETOOTH.md" class="more-menu-action-btn" target="_blank" rel="noopener" style="text-decoration:none;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4zm-4.71-1.88L14.59 7.5 13 9.09V5.83zm0 12.34v-3.26l1.59 1.59-1.59 1.67z"/>
+            </svg>
+            <span>Bluetooth Setup Guide</span>
+          </a>
+
           <button id="menu-btn-telemetry" class="more-menu-action-btn" type="button">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
@@ -145,6 +152,29 @@
   <div id="compat-warning-banner" class="compat-banner" hidden>
     <strong>Browser Notice:</strong>
     <span id="compat-warning-text"></span>
+  </div>
+
+  <!-- First-Use Bluetooth Setup Guide Banner -->
+  <div id="bt-guide-banner" class="pwa-promo-banner" role="region" aria-label="Bluetooth Setup Guide" hidden>
+    <div class="pwa-promo-content">
+      <div class="pwa-promo-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-3px;margin-right:6px;">
+          <path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4zm-4.71-1.88L14.59 7.5 13 9.09V5.83zm0 12.34v-3.26l1.59 1.59-1.59 1.67z"/>
+        </svg>
+        <strong>First Time Printing? Bluetooth Setup Guide</strong>
+      </div>
+      <div class="pwa-promo-text">
+        Zoemini 2 and Ivy 2 printers communicate via Bluetooth Classic (RFCOMM). Follow our setup guide for <strong>Linux</strong> (rfcomm binding), <strong>Android</strong> (standalone APK), and <strong>Windows</strong> (Bluetooth COM port).
+      </div>
+    </div>
+    <div class="pwa-promo-actions">
+      <a id="btn-view-bt-guide" class="btn btn-sm btn-primary" href="README_BLUETOOTH.md" target="_blank" rel="noopener">
+        Bluetooth Guide
+      </a>
+      <button id="btn-dismiss-bt-guide" class="btn btn-sm" type="button">
+        Got it
+      </button>
+    </div>
   </div>
 
   <!-- Android Web Banner: Hint to download native APK -->
@@ -295,6 +325,12 @@
 
         <!-- Dual Round Quick Actions -->
         <div id="dual-round-actions-bar" class="dual-round-bar" hidden>
+          <button id="btn-select-slot1" class="btn btn-sm btn-primary" type="button" title="Select or change image for Top Sticker (#1)">
+            Top Image...
+          </button>
+          <button id="btn-select-slot2" class="btn btn-sm btn-primary" type="button" title="Select or change image for Bottom Sticker (#2)">
+            Bottom Image...
+          </button>
           <button id="btn-copy-slot1-to-2" class="btn btn-sm" type="button" title="Duplicate Top Sticker image & crop settings to Bottom Sticker">
             Copy Top → Bottom
           </button>

@@ -47,6 +47,9 @@ Because the Zoemini 2 / Ivy 2 (`PV-223`) communicates over **Bluetooth Classic S
 
 ### 2. Pairing & Connection by Platform
 
+> [!TIP]
+> **Complete Bluetooth Guide**: For in-depth, step-by-step Bluetooth pairing and troubleshooting instructions on Linux, Android, Windows, macOS, and iOS, please see **[README_BLUETOOTH.md](README_BLUETOOTH.md)**.
+
 #### Windows / macOS / ChromeOS
 1. Turn on your **Zoemini 2 / Ivy 2** (hold the power button until the LED illuminates).
 2. Pair the printer in your OS Bluetooth settings.
@@ -183,7 +186,11 @@ As documented in **[dtgreene/ivy2](https://github.com/dtgreene/ivy2)**:
 │   ├── build-ios.yml             # Automated iOS IPA & xcarchive CI & Release publisher
 │   ├── check-assets-sync.yml     # Verification ensuring web, Android, and iOS assets stay synced
 │   └── deploy-pages.yml          # GitHub Pages deployment workflow
+├── docs/
+│   ├── sign_apk.md               # Guide: Signing Android APK in CI with GitHub Secrets
+│   └── publish_apk.md            # Guide: Publishing to F-Droid & fastlane metadata
 ├── serve.sh                      # Zero-dependency local HTTP server
+├── README_BLUETOOTH.md           # Comprehensive Bluetooth setup & troubleshooting guide
 ├── PLAN.md                       # Protocol specifications & architecture reference
 └── PLAN_iOS.md                   # iOS native container & Bluetooth driver implementation plan
 ```

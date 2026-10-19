@@ -861,9 +861,16 @@ body.mobile-tab-color #card-color-controls {
 }
 
 .btn-danger {
-  background: rgba(239, 68, 68, 0.14);
-  border-color: rgba(239, 68, 68, 0.45);
-  color: #fca5a5;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  border-color: #ef4444;
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-color: #f87171;
+  color: #fff;
 }
 
 .btn-warn {
@@ -984,12 +991,14 @@ body.mobile-tab-color #card-color-controls {
 
 .dual-round-bar {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.45rem;
   margin-top: 0.65rem;
 }
 
 .dual-round-bar .btn {
-  flex: 1;
+  flex: 1 1 calc(50% - 0.45rem);
+  min-width: 120px;
 }
 
 /* PDF Pagination Bar */

@@ -300,10 +300,17 @@ export class PreviewEditor {
     this.btnSelectSlot2?.addEventListener("click", () => this.openImageModal("slot2"));
     this.btnCloseImageModal?.addEventListener("click", () => this.closeImageModal());
     this.btnCancelImageModal?.addEventListener("click", () => this.closeImageModal());
+    let modalBackdropPointerDown = false;
+    this.imageModal?.addEventListener("pointerdown", (e) => {
+      modalBackdropPointerDown = (e.target === this.imageModal);
+    });
     this.imageModal?.addEventListener("click", (e) => {
-      if (e.target === this.imageModal) {
-        this.closeImageModal();
+      if (e.target === this.imageModal && modalBackdropPointerDown) {
+        if (Date.now() - (this._modalOpenedTime || 0) > 300) {
+          this.closeImageModal();
+        }
       }
+      modalBackdropPointerDown = false;
     });
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && this.imageModal && !this.imageModal.hidden) {
@@ -663,7 +670,7 @@ export class PreviewEditor {
 
       if (!tapMoved) {
         const dist = Math.hypot(e.clientX - tapStartX, e.clientY - tapStartY);
-        if (dist > 8) {
+        if (dist > 12) {
           tapMoved = true;
         }
       }
@@ -710,7 +717,7 @@ export class PreviewEditor {
         // Ignore
       }
 
-      const isSingleTap = !tapMoved && (Date.now() - tapStartTime < 450);
+      const isSingleTap = !tapMoved && (Date.now() - tapStartTime < 500);
 
       if (this._activePointers.size === 0) {
         this.previewCanvas.classList.remove("is-dragging");
@@ -721,7 +728,7 @@ export class PreviewEditor {
       }
 
       if (isSingleTap) {
-        const coords = this._clientToCanvasCoords(e.clientX, e.clientY);
+        const coords = this._clientToCanvasCoords(tapStartX, tapStartY);
         const clickedSlot = hitTestSlot(
           coords.x,
           coords.y,
@@ -863,9 +870,13 @@ export class PreviewEditor {
       this.btnImageModalClear.disabled = !currentMedia;
     }
 
-    if (this.imageModal) {
-      this.imageModal.hidden = false;
-    }
+    this._modalOpenedTime = Date.now();
+    setTimeout(() => {
+      if (this.imageModal && this.modalTargetSlot) {
+        this.imageModal.hidden = false;
+        this._modalOpenedTime = Date.now();
+      }
+    }, 20);
   }
 
   closeImageModal() {
@@ -873,6 +884,7 @@ export class PreviewEditor {
       this.imageModal.hidden = true;
     }
     this.modalTargetSlot = null;
+    this._modalOpenedTime = 0;
   }
 
   async loadFileIntoSlot(slotId, file) {

@@ -114,6 +114,10 @@ export class ZoeminiPrinter {
     return Boolean(this.transport && this.transport.connected);
   }
 
+  get connected() {
+    return this.isConnected();
+  }
+
   setPaperTypeOverride(overrideMode = null) {
     this.telemetry.paperTypeOverride = overrideMode || null;
     savePersistedTrayPaper(this.telemetry.paperTypeOverride);

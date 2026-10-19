@@ -44,9 +44,22 @@ jobs:
         run: chmod +x android/gradlew
 
       - name: Build APKs (Release & Debug)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd android
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Decoding release keystore from GitHub secret..."
+            echo "$KEYSTORE_BASE64" | base64 -d > app/release.jks
+            export KEYSTORE_FILE="release.jks"
+          else
+            echo "KEYSTORE_BASE64 not set; building release APK with debug signature fallback."
+          fi
           ./gradlew assembleDebug assembleRelease --stacktrace
+          rm -f app/release.jks
           cp app/build/outputs/apk/release/com.michaelschuldes.zoemini-ivy2-print-release.apk app/build/outputs/apk/release/com.michaelschuldes.zoemini-ivy2-print.apk
 
       - name: Upload Release APK Artifact
