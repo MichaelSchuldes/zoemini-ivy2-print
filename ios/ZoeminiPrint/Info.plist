@@ -30,6 +30,7 @@
 	<array>
 		<string>jp.co.canon.icp</string>
 		<string>com.canon.icp</string>
+		<string>jp.co.canon.cec.icp</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

@@ -6,7 +6,8 @@ public class ExternalAccessoryEngine: NSObject, StreamDelegate {
 
     private static let supportedProtocols = [
         "jp.co.canon.icp",
-        "com.canon.icp"
+        "com.canon.icp",
+        "jp.co.canon.cec.icp"
     ]
 
     private var accessory: EAAccessory?
@@ -15,13 +16,12 @@ public class ExternalAccessoryEngine: NSObject, StreamDelegate {
     private var outputStream: OutputStream?
 
     private var rxBuffer = Data()
-    private let bufferLock = NSLock()
     private let dataCondition = NSCondition()
     private var isStreamOpen = false
 
     public override init() {
         super.init()
-        EAAccessoryManager.shared().registerForLocalNotificationNotifications()
+        EAAccessoryManager.shared().registerForLocalNotifications()
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(accessoryDisconnected(_:)),
@@ -32,6 +32,7 @@ public class ExternalAccessoryEngine: NSObject, StreamDelegate {
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+        EAAccessoryManager.shared().unregisterForLocalNotifications()
         disconnect()
     }
 
@@ -124,15 +125,31 @@ public class ExternalAccessoryEngine: NSObject, StreamDelegate {
                 return "Write failed: Invalid memory pointer"
             }
 
+            var retries = 0
             while totalWritten < bytesCount {
+                guard self.isStreamOpen else {
+                    return "Write error: Stream closed"
+                }
+                if outStream.streamStatus == .error || outStream.streamStatus == .closed {
+                    return "Write error: \(outStream.streamError?.localizedDescription ?? "Stream closed")"
+                }
                 if !outStream.hasSpaceAvailable {
                     Thread.sleep(forTimeInterval: 0.005)
+                    retries += 1
+                    if retries > 1000 {
+                        return "Write error: Stream write timed out"
+                    }
+                    continue
                 }
                 let written = outStream.write(ptr.advanced(by: totalWritten), maxLength: bytesCount - totalWritten)
                 if written < 0 {
                     return "Write error: \(outStream.streamError?.localizedDescription ?? "unknown")"
+                } else if written == 0 {
+                    Thread.sleep(forTimeInterval: 0.005)
+                } else {
+                    totalWritten += written
+                    retries = 0
                 }
-                totalWritten += written
             }
             return "OK"
         }
@@ -149,12 +166,14 @@ public class ExternalAccessoryEngine: NSObject, StreamDelegate {
         defer { dataCondition.unlock() }
 
         while rxBuffer.count < byteCount {
-            let remaining = deadline.timeIntervalSinceNow
-            if remaining <= 0 {
+            guard isStreamOpen else {
+                return "ERR:Not connected"
+            }
+            if Date() >= deadline {
                 return "ERR:Timeout waiting for \(byteCount) bytes (got \(rxBuffer.count))"
             }
 
-            if !dataCondition.wait(until: Date().addingTimeInterval(remaining)) {
+            if !dataCondition.wait(until: deadline) {
                 if rxBuffer.count < byteCount {
                     return "ERR:Timeout waiting for \(byteCount) bytes (got \(rxBuffer.count))"
                 }
@@ -174,25 +193,32 @@ public class ExternalAccessoryEngine: NSObject, StreamDelegate {
     public func disconnect() {
         dataCondition.lock()
         isStreamOpen = false
+        rxBuffer.removeAll()
         dataCondition.broadcast()
         dataCondition.unlock()
 
-        inputStream?.close()
-        inputStream?.remove(from: .main, forMode: .common)
-        inputStream?.delegate = nil
-        inputStream = nil
+        let inStream = self.inputStream
+        let outStream = self.outputStream
+        self.inputStream = nil
+        self.outputStream = nil
+        self.session = nil
+        self.accessory = nil
 
-        outputStream?.close()
-        outputStream?.remove(from: .main, forMode: .common)
-        outputStream?.delegate = nil
-        outputStream = nil
+        let cleanup = {
+            inStream?.close()
+            inStream?.remove(from: .main, forMode: .common)
+            inStream?.delegate = nil
 
-        session = nil
-        accessory = nil
+            outStream?.close()
+            outStream?.remove(from: .main, forMode: .common)
+            outStream?.delegate = nil
+        }
 
-        bufferLock.lock()
-        rxBuffer.removeAll()
-        bufferLock.unlock()
+        if Thread.isMainThread {
+            cleanup()
+        } else {
+            DispatchQueue.main.async(execute: cleanup)
+        }
     }
 
     // MARK: - StreamDelegate

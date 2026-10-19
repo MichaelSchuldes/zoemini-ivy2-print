@@ -13,13 +13,18 @@ public class CoreBluetoothEngine: NSObject, CBCentralManagerDelegate, CBPeripher
     private var rxBuffer = Data()
     private let dataCondition = NSCondition()
 
+    private let connectCondition = NSCondition()
+    private var isConnectPending = false
+    private var connectError: String? = nil
+
     public override init() {
         super.init()
         self.centralManager = CBCentralManager(delegate: self, queue: nil)
     }
 
     public func isBluetoothAvailable() -> Bool {
-        return centralManager?.state == .poweredOn
+        guard let state = centralManager?.state else { return false }
+        return state == .poweredOn || state == .unknown || state == .resetting
     }
 
     public func getDiscoveredDevices() -> [[String: String]] {
@@ -48,16 +53,45 @@ public class CoreBluetoothEngine: NSObject, CBCentralManagerDelegate, CBPeripher
     }
 
     public func connect(uuidString: String) -> String {
-        guard let uuid = UUID(uuidString: uuidString),
-              let peripheral = discoveredPeripherals[uuid] else {
-            return "BLE peripheral not found for UUID: \(uuidString)"
+        let peripheral: CBPeripheral?
+        if let uuid = UUID(uuidString: uuidString) {
+            peripheral = discoveredPeripherals[uuid]
+        } else {
+            peripheral = discoveredPeripherals.values.first(where: {
+                $0.name?.lowercased().contains(uuidString.lowercased()) == true
+            })
+        }
+
+        guard let target = peripheral else {
+            return "BLE peripheral not found for: \(uuidString)"
         }
 
         disconnect()
-        connectedPeripheral = peripheral
-        peripheral.delegate = self
-        centralManager?.connect(peripheral, options: nil)
-        return "OK"
+        connectedPeripheral = target
+        target.delegate = self
+
+        connectCondition.lock()
+        isConnectPending = true
+        connectError = nil
+        centralManager?.connect(target, options: nil)
+
+        let deadline = Date().addingTimeInterval(10.0)
+        while isConnectPending && writeCharacteristic == nil && connectError == nil {
+            if !connectCondition.wait(until: deadline) {
+                break
+            }
+        }
+        isConnectPending = false
+        let err = connectError
+        let isReady = writeCharacteristic != nil
+        connectCondition.unlock()
+
+        if isReady {
+            return "OK"
+        } else {
+            disconnect()
+            return err ?? "BLE connection timed out"
+        }
     }
 
     public func write(data: Data) -> String {
@@ -82,12 +116,14 @@ public class CoreBluetoothEngine: NSObject, CBCentralManagerDelegate, CBPeripher
         defer { dataCondition.unlock() }
 
         while rxBuffer.count < byteCount {
-            let remaining = deadline.timeIntervalSinceNow
-            if remaining <= 0 {
+            guard connectedPeripheral != nil else {
+                return "ERR:Not connected"
+            }
+            if Date() >= deadline {
                 return "ERR:Timeout waiting for \(byteCount) bytes (got \(rxBuffer.count))"
             }
 
-            if !dataCondition.wait(until: Date().addingTimeInterval(remaining)) {
+            if !dataCondition.wait(until: deadline) {
                 if rxBuffer.count < byteCount {
                     return "ERR:Timeout waiting for \(byteCount) bytes (got \(rxBuffer.count))"
                 }
@@ -100,10 +136,15 @@ public class CoreBluetoothEngine: NSObject, CBCentralManagerDelegate, CBPeripher
     }
 
     public func isConnected() -> Bool {
-        return connectedPeripheral?.state == .connected
+        return connectedPeripheral?.state == .connected && writeCharacteristic != nil
     }
 
     public func disconnect() {
+        connectCondition.lock()
+        isConnectPending = false
+        connectCondition.broadcast()
+        connectCondition.unlock()
+
         if let peripheral = connectedPeripheral {
             centralManager?.cancelPeripheralConnection(peripheral)
         }
@@ -132,7 +173,21 @@ public class CoreBluetoothEngine: NSObject, CBCentralManagerDelegate, CBPeripher
         peripheral.discoverServices(nil)
     }
 
+    public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+        connectCondition.lock()
+        isConnectPending = false
+        connectError = error?.localizedDescription ?? "Failed to connect to BLE peripheral"
+        connectCondition.broadcast()
+        connectCondition.unlock()
+    }
+
     public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        connectCondition.lock()
+        isConnectPending = false
+        connectError = error?.localizedDescription ?? "Disconnected from BLE peripheral"
+        connectCondition.broadcast()
+        connectCondition.unlock()
+
         if connectedPeripheral == peripheral {
             disconnect()
         }
@@ -148,6 +203,7 @@ public class CoreBluetoothEngine: NSObject, CBCentralManagerDelegate, CBPeripher
 
     public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         guard let characteristics = service.characteristics else { return }
+        connectCondition.lock()
         for char in characteristics {
             if char.properties.contains(.notify) {
                 notifyCharacteristic = char
@@ -157,6 +213,11 @@ public class CoreBluetoothEngine: NSObject, CBCentralManagerDelegate, CBPeripher
                 writeCharacteristic = char
             }
         }
+        if writeCharacteristic != nil {
+            isConnectPending = false
+            connectCondition.broadcast()
+        }
+        connectCondition.unlock()
     }
 
     public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {

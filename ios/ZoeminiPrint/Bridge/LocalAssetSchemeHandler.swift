@@ -34,7 +34,8 @@ public class LocalAssetSchemeHandler: NSObject, WKURLSchemeHandler {
 
         let fileURL = assetDirectoryURL.appendingPathComponent(path)
 
-        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+        var isDir: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: fileURL.path, isDirectory: &isDir), !isDir.boolValue else {
             let errorResponse = HTTPURLResponse(
                 url: url,
                 statusCode: 404,

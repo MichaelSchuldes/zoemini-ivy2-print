@@ -314,17 +314,23 @@ export class StatusPanel {
     let chosenAddress = null;
     let chosenName = null;
 
-    if (typeof window !== "undefined" && window.AndroidBluetoothSerial) {
+    const nativeBridge =
+      typeof window !== "undefined" &&
+      (window.iOSBluetoothSerial || window.AndroidBluetoothSerial);
+
+    if (nativeBridge) {
       let devices = [];
       try {
-        devices = JSON.parse(window.AndroidBluetoothSerial.getBondedDevices() || "[]");
+        const raw = await nativeBridge.getBondedDevices();
+        devices = typeof raw === "string" ? JSON.parse(raw || "[]") : (raw || []);
       } catch (e) {
-        console.warn("Failed to parse bonded devices", e);
+        console.warn("Failed to get bonded devices", e);
       }
 
+      const osName = (typeof window !== "undefined" && window.iOSBluetoothSerial) ? "iOS" : "Android";
       if (devices.length === 0) {
         this.showToast(
-          "No paired Bluetooth devices found. Please pair your Zoemini in Android Bluetooth settings first.",
+          `No paired Bluetooth devices found. Please pair your Zoemini in ${osName} Bluetooth settings first.`,
           "warn"
         );
         return;

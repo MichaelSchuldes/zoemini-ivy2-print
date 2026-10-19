@@ -30,8 +30,8 @@ function initAndroidApkBanner() {
   const btnDismiss = document.getElementById("btn-dismiss-apk-banner");
   if (!banner) return;
 
-  // If running inside the native Android WebView bridge, hide the web hint banner
-  if (typeof window !== "undefined" && window.AndroidBluetoothSerial) {
+  // If running inside the native Android or iOS WebView bridge, hide the web hint banner
+  if (typeof window !== "undefined" && (window.AndroidBluetoothSerial || window.iOSBluetoothSerial)) {
     banner.hidden = true;
     return;
   }

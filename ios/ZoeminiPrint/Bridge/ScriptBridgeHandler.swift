@@ -69,30 +69,20 @@ public class ScriptBridgeHandler: NSObject, WKScriptMessageHandler {
         DispatchQueue.main.async { [weak self] in
             guard let webView = self?.webView else { return }
 
-            let jsResult: String
+            var payload: [String: Any] = [:]
             if let error = error {
-                let escapedError = error.replacingOccurrences(of: "\"", with: "\\\"")
-                jsResult = "window.__iosBluetoothCallback(\(callId), null, \"\(escapedError)\");"
-            } else if let result = result {
-                if let boolVal = result as? Bool {
-                    jsResult = "window.__iosBluetoothCallback(\(callId), \(boolVal ? "true" : "false"), null);"
-                } else if let strVal = result as? String {
-                    let escaped = strVal.replacingOccurrences(of: "\\", with: "\\\\")
-                                        .replacingOccurrences(of: "\"", with: "\\\"")
-                                        .replacingOccurrences(of: "\n", with: "\\n")
-                                        .replacingOccurrences(of: "\r", with: "\\r")
-                    jsResult = "window.__iosBluetoothCallback(\(callId), \"\(escaped)\", null);"
-                } else if let jsonData = try? JSONSerialization.data(withJSONObject: result),
-                          let jsonString = String(data: jsonData, encoding: .utf8) {
-                    jsResult = "window.__iosBluetoothCallback(\(callId), \(jsonString), null);"
-                } else {
-                    jsResult = "window.__iosBluetoothCallback(\(callId), null, null);"
-                }
+                payload["err"] = error
             } else {
-                jsResult = "window.__iosBluetoothCallback(\(callId), null, null);"
+                payload["res"] = result ?? NSNull()
             }
 
-            webView.evaluateJavaScript(jsResult, completionHandler: nil)
+            if let jsonData = try? JSONSerialization.data(withJSONObject: payload),
+               let jsonString = String(data: jsonData, encoding: .utf8) {
+                let js = "window.__iosBluetoothCallback(\(callId), (\(jsonString)).res, (\(jsonString)).err);"
+                webView.evaluateJavaScript(js, completionHandler: nil)
+            } else {
+                webView.evaluateJavaScript("window.__iosBluetoothCallback(\(callId), null, \"Serialization error\");", completionHandler: nil)
+            }
         }
     }
 }

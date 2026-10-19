@@ -3,7 +3,9 @@
 A **100% client-side, zero-backend web application** for printing photos, vector SVGs, and PDFs directly from your browser to a **Zoemini 2 (`PV-223`)** or **Ivy 2** pocket ZINK printer over Bluetooth Classic RFCOMM using the **Web Serial API** (`navigator.serial`).
 
 [![Build Android APK](https://github.com/MichaelSchuldes/zoemini-ivy2-print/actions/workflows/build-apk.yml/badge.svg)](https://github.com/MichaelSchuldes/zoemini-ivy2-print/actions/workflows/build-apk.yml)
+[![Build iOS App](https://github.com/MichaelSchuldes/zoemini-ivy2-print/actions/workflows/build-ios.yml/badge.svg)](https://github.com/MichaelSchuldes/zoemini-ivy2-print/actions/workflows/build-ios.yml)
 [![Download Android APK](https://img.shields.io/badge/Download%20APK-Latest%20Release-brightgreen?logo=android&logoColor=white)](https://github.com/MichaelSchuldes/zoemini-ivy2-print/releases/latest/download/com.michaelschuldes.zoemini-ivy2-print.apk)
+[![Download iOS IPA](https://img.shields.io/badge/Download%20IPA-Latest%20Release-blue?logo=apple&logoColor=white)](https://github.com/MichaelSchuldes/zoemini-ivy2-print/releases/latest/download/com.michaelschuldes.zoemini-ivy2-print.ipa)
 [![GitHub Releases](https://img.shields.io/github/v/release/MichaelSchuldes/zoemini-ivy2-print?color=blue&logo=github)](https://github.com/MichaelSchuldes/zoemini-ivy2-print/releases)
 
 > **Built with Gemini 4** • Protocol implementation based on the reverse-engineering work in **[dtgreene/ivy2](https://github.com/dtgreene/ivy2)**.
@@ -91,6 +93,23 @@ We provide a lightweight, 100% self-contained Android APK that bundles this stud
 
 ---
 
+### 🍎 iOS: Native App & Bluetooth Print Driver
+
+On iOS, WebKit / Safari does not implement the Web Serial API or Bluetooth Classic SPP profiles. To bring the full studio to iPhone and iPad, we provide a native Swift app wrapper (`ZoeminiPrint`):
+
+- **Native MFi & BLE Bridge:** Connects to paired Zoemini 2 / Ivy 2 printers via Apple's MFi `ExternalAccessory.framework` (`EASession` with `jp.co.canon.icp`) and provides automatic fallback to `CoreBluetooth.framework`.
+- **In-App Device Chooser:** Detects connected accessories and allows selecting your printer directly inside the app.
+- **100% Offline & Local:** Uses a custom `WKURLSchemeHandler` (`app://localhost`) to serve all web assets and PDF rendering engines locally from the app bundle with zero network dependency and full ES6 module support.
+- **Sideloadable IPA & Xcode Archive:** Pre-packaged unsigned `.ipa` packages and `.xcarchive` bundles are built by automated GitHub Actions CI and attached to every release.
+
+> [!TIP]
+> **Download & Install the iOS App:**
+> - 📦 **[Direct Download: `com.michaelschuldes.zoemini-ivy2-print.ipa`](https://github.com/MichaelSchuldes/zoemini-ivy2-print/releases/latest/download/com.michaelschuldes.zoemini-ivy2-print.ipa)** (Latest Release Asset)
+> - 📁 **[Download Xcode Archive: `ZoeminiPrint.xcarchive.zip`](https://github.com/MichaelSchuldes/zoemini-ivy2-print/releases/latest/download/ZoeminiPrint.xcarchive.zip)**
+> - 📲 **Installation Methods:** Sideload the IPA onto your device using **AltStore**, **Sideloadly**, or **TrollStore**, or open `ios/ZoeminiPrint.xcodeproj` in Xcode and deploy directly with your free personal Apple Developer account.
+
+---
+
 ## 💻 Running Locally
 
 Because ES Modules (`<script type="module">`) cannot be loaded over the `file://` protocol due to browser CORS policies, serve the folder over `http://localhost`:
@@ -155,10 +174,18 @@ As documented in **[dtgreene/ivy2](https://github.com/dtgreene/ivy2)**:
 │       ├── preview-editor.js     # Interactive canvas pan/pinch-zoom/crop editor
 │       ├── status-panel.js       # Telemetry dashboard
 │       └── debug-console.js      # Live hex packet inspector
+├── android/                      # Standalone Android APK project (Java / Gradle)
+├── ios/                          # Standalone iOS App project (Swift / WKWebView / Xcode)
+│   ├── ZoeminiPrint.xcodeproj/   # Xcode project & shared scheme
+│   └── ZoeminiPrint/             # Swift app container, MFi EASession & CoreBluetooth bridge
 ├── .github/workflows/
-│   └── deploy-pages.yml          # GitHub Actions workflow for GitHub Pages (github.io)
+│   ├── build-apk.yml             # Automated Android APK CI & Release publisher
+│   ├── build-ios.yml             # Automated iOS IPA & xcarchive CI & Release publisher
+│   ├── check-assets-sync.yml     # Verification ensuring web, Android, and iOS assets stay synced
+│   └── deploy-pages.yml          # GitHub Pages deployment workflow
 ├── serve.sh                      # Zero-dependency local HTTP server
-└── PLAN.md                       # Architecture & binary protocol reference
+├── PLAN.md                       # Protocol specifications & architecture reference
+└── PLAN_iOS.md                   # iOS native container & Bluetooth driver implementation plan
 ```
 
 ---
