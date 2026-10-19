@@ -102,16 +102,18 @@ function initNavigation() {
 }
 
 function initMobileStudioTabs() {
-  const tabMedia = document.getElementById("tab-btn-media");
+  const tabPaper = document.getElementById("tab-btn-paper");
   const tabCrop = document.getElementById("tab-btn-crop");
+  const tabColor = document.getElementById("tab-btn-color");
   const tabToggle = document.getElementById("tab-btn-toggle");
   const toggleIcon = document.getElementById("tab-toggle-icon");
-  const colLeft = document.querySelector(".col-left");
   const colRight = document.querySelector(".col-right");
 
-  if (!tabMedia || !tabCrop || !colLeft || !colRight) return;
+  if (!tabPaper || !tabCrop || !tabColor || !colRight) return;
 
   let isCollapsed = false;
+  let currentTab = "paper";
+  const isMobile = () => window.innerWidth <= 850;
 
   function setCollapsed(collapsed) {
     isCollapsed = collapsed;
@@ -128,36 +130,45 @@ function initMobileStudioTabs() {
     }
   }
 
-  function switchTab(activeTab) {
+  function switchTab(tab) {
     if (isCollapsed) {
       setCollapsed(false);
     }
-    if (activeTab === "media") {
-      tabMedia.classList.add("active");
-      tabCrop.classList.remove("active");
-      colLeft.classList.remove("mobile-tab-hidden");
-      colRight.classList.add("mobile-tab-hidden");
-    } else {
-      tabCrop.classList.add("active");
-      tabMedia.classList.remove("active");
-      colRight.classList.remove("mobile-tab-hidden");
-      colLeft.classList.add("mobile-tab-hidden");
-    }
+    currentTab = tab;
+    tabPaper.classList.toggle("active", tab === "paper");
+    tabCrop.classList.toggle("active", tab === "crop");
+    tabColor.classList.toggle("active", tab === "color");
+
+    tabPaper.setAttribute("aria-selected", tab === "paper");
+    tabCrop.setAttribute("aria-selected", tab === "crop");
+    tabColor.setAttribute("aria-selected", tab === "color");
+
+    document.body.classList.toggle("mobile-tab-paper", tab === "paper");
+    document.body.classList.toggle("mobile-tab-crop", tab === "crop");
+    document.body.classList.toggle("mobile-tab-color", tab === "color");
   }
 
-  tabMedia.addEventListener("click", () => {
-    if (tabMedia.classList.contains("active") && !isCollapsed) {
+  tabPaper.addEventListener("click", () => {
+    if (isMobile() && currentTab === "paper" && !isCollapsed) {
       setCollapsed(true);
     } else {
-      switchTab("media");
+      switchTab("paper");
     }
   });
 
   tabCrop.addEventListener("click", () => {
-    if (tabCrop.classList.contains("active") && !isCollapsed) {
+    if (isMobile() && currentTab === "crop" && !isCollapsed) {
       setCollapsed(true);
     } else {
       switchTab("crop");
+    }
+  });
+
+  tabColor.addEventListener("click", () => {
+    if (isMobile() && currentTab === "color" && !isCollapsed) {
+      setCollapsed(true);
+    } else {
+      switchTab("color");
     }
   });
 
@@ -167,8 +178,19 @@ function initMobileStudioTabs() {
     });
   }
 
-  // Default to media tab on mobile
-  switchTab("media");
+  // Default to paper tab
+  switchTab("paper");
+
+  // On mobile screens, minimize tabs drawer by default to maximize preview area
+  if (isMobile()) {
+    setCollapsed(true);
+  }
+
+  window.addEventListener("resize", () => {
+    if (!isMobile() && isCollapsed) {
+      setCollapsed(false);
+    }
+  });
 }
 
 window.addEventListener("DOMContentLoaded", () => {

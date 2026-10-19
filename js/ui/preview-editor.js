@@ -153,6 +153,7 @@ export class PreviewEditor {
     this.labelSaturation = document.getElementById("label-saturation");
     this.sliderQuality = document.getElementById("slider-jpeg-quality");
     this.labelQuality = document.getElementById("label-jpeg-quality");
+    this.btnResetColor = document.getElementById("btn-reset-color");
 
     // Round Sticker Calibration inputs
     this.calibrationSection = document.getElementById("round-calibration-details");
@@ -479,6 +480,15 @@ export class PreviewEditor {
       this.state.jpegQuality = qPct / 100;
       this.labelQuality.textContent = `${qPct}%`;
       this._schedulePayloadCalculation();
+    });
+    this.btnResetColor?.addEventListener("click", () => {
+      const t = this._activeTransform();
+      t.brightness = 100;
+      t.contrast = 100;
+      t.saturation = 100;
+      this.state.jpegQuality = 0.95;
+      this._syncUiFromState();
+      this.requestRender();
     });
 
     // Calibration inputs
