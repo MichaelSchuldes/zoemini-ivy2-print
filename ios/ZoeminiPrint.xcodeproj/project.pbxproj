@@ -1,0 +1,396 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1A0002012C12345600000201 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0001012C12345600000101 /* AppDelegate.swift */; };
+		1A0002022C12345600000202 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0001022C12345600000102 /* SceneDelegate.swift */; };
+		1A0002032C12345600000203 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0001032C12345600000103 /* ViewController.swift */; };
+		1A0002052C12345600000205 /* LocalAssetSchemeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0001052C12345600000105 /* LocalAssetSchemeHandler.swift */; };
+		1A0002062C12345600000206 /* ScriptBridgeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0001062C12345600000106 /* ScriptBridgeHandler.swift */; };
+		1A0002072C12345600000207 /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0001072C12345600000107 /* BluetoothManager.swift */; };
+		1A0002082C12345600000208 /* ExternalAccessoryEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0001082C12345600000108 /* ExternalAccessoryEngine.swift */; };
+		1A0002092C12345600000209 /* CoreBluetoothEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0001092C12345600000109 /* CoreBluetoothEngine.swift */; };
+		1A0002102C12345600000210 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1A0001102C12345600000110 /* LaunchScreen.storyboard */; };
+		1A0002112C12345600000211 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A0001112C12345600000111 /* Assets.xcassets */; };
+		1A0002122C12345600000212 /* Assets in Resources */ = {isa = PBXBuildFile; fileRef = 1A0001122C12345600000112 /* Assets */; };
+		1A0002202C12345600000220 /* ExternalAccessory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0001202C12345600000120 /* ExternalAccessory.framework */; };
+		1A0002212C12345600000221 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0001212C12345600000121 /* CoreBluetooth.framework */; };
+		1A0002222C12345600000222 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0001222C12345600000122 /* WebKit.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1A0000122C12345600000012 /* ZoeminiPrint.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZoeminiPrint.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A0001012C12345600000101 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		1A0001022C12345600000102 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		1A0001032C12345600000103 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		1A0001042C12345600000104 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1A0001052C12345600000105 /* LocalAssetSchemeHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAssetSchemeHandler.swift; sourceTree = "<group>"; };
+		1A0001062C12345600000106 /* ScriptBridgeHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptBridgeHandler.swift; sourceTree = "<group>"; };
+		1A0001072C12345600000107 /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
+		1A0001082C12345600000108 /* ExternalAccessoryEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalAccessoryEngine.swift; sourceTree = "<group>"; };
+		1A0001092C12345600000109 /* CoreBluetoothEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreBluetoothEngine.swift; sourceTree = "<group>"; };
+		1A0001102C12345600000110 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		1A0001112C12345600000111 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1A0001122C12345600000112 /* Assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Assets; sourceTree = "<group>"; };
+		1A0001202C12345600000120 /* ExternalAccessory.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExternalAccessory.framework; path = System/Library/Frameworks/ExternalAccessory.framework; sourceTree = SDKROOT; };
+		1A0001212C12345600000121 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
+		1A0001222C12345600000122 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1A0000212C12345600000021 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A0002202C12345600000220 /* ExternalAccessory.framework in Frameworks */,
+				1A0002212C12345600000221 /* CoreBluetooth.framework in Frameworks */,
+				1A0002222C12345600000222 /* WebKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1A0000102C12345600000010 = {
+			isa = PBXGroup;
+			children = (
+				1A0000302C12345600000030 /* ZoeminiPrint */,
+				1A0000132C12345600000013 /* Frameworks */,
+				1A0000112C12345600000011 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1A0000112C12345600000011 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000122C12345600000012 /* ZoeminiPrint.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1A0000132C12345600000013 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1A0001202C12345600000120 /* ExternalAccessory.framework */,
+				1A0001212C12345600000121 /* CoreBluetooth.framework */,
+				1A0001222C12345600000122 /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		1A0000302C12345600000030 /* ZoeminiPrint */ = {
+			isa = PBXGroup;
+			children = (
+				1A0001012C12345600000101 /* AppDelegate.swift */,
+				1A0001022C12345600000102 /* SceneDelegate.swift */,
+				1A0001032C12345600000103 /* ViewController.swift */,
+				1A0000312C12345600000031 /* Bridge */,
+				1A0000322C12345600000032 /* Resources */,
+				1A0001122C12345600000112 /* Assets */,
+				1A0001042C12345600000104 /* Info.plist */,
+			);
+			path = ZoeminiPrint;
+			sourceTree = "<group>";
+		};
+		1A0000312C12345600000031 /* Bridge */ = {
+			isa = PBXGroup;
+			children = (
+				1A0001052C12345600000105 /* LocalAssetSchemeHandler.swift */,
+				1A0001062C12345600000106 /* ScriptBridgeHandler.swift */,
+				1A0001072C12345600000107 /* BluetoothManager.swift */,
+				1A0001082C12345600000108 /* ExternalAccessoryEngine.swift */,
+				1A0001092C12345600000109 /* CoreBluetoothEngine.swift */,
+			);
+			path = Bridge;
+			sourceTree = "<group>";
+		};
+		1A0000322C12345600000032 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				1A0001102C12345600000110 /* LaunchScreen.storyboard */,
+				1A0001112C12345600000111 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1A0000022C12345600000002 /* ZoeminiPrint */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A0000042C12345600000004 /* Build configuration list for PBXNativeTarget "ZoeminiPrint" */;
+			buildPhases = (
+				1A0000202C12345600000020 /* Sources */,
+				1A0000212C12345600000021 /* Frameworks */,
+				1A0000222C12345600000022 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ZoeminiPrint;
+			productName = ZoeminiPrint;
+			productReference = 1A0000122C12345600000012 /* ZoeminiPrint.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1A0000012C12345600000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					1A0000022C12345600000002 = {
+						CreatedOnToolsVersion = 15.4;
+					};
+				};
+			};
+			buildConfigurationList = 1A0000032C12345600000003 /* Build configuration list for PBXProject "ZoeminiPrint" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 1A0000102C12345600000010;
+			productRefGroup = 1A0000112C12345600000011 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1A0000022C12345600000002 /* ZoeminiPrint */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1A0000222C12345600000022 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A0002102C12345600000210 /* LaunchScreen.storyboard in Resources */,
+				1A0002112C12345600000211 /* Assets.xcassets in Resources */,
+				1A0002122C12345600000212 /* Assets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1A0000202C12345600000020 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A0002012C12345600000201 /* AppDelegate.swift in Sources */,
+				1A0002022C12345600000202 /* SceneDelegate.swift in Sources */,
+				1A0002032C12345600000203 /* ViewController.swift in Sources */,
+				1A0002052C12345600000205 /* LocalAssetSchemeHandler.swift in Sources */,
+				1A0002062C12345600000206 /* ScriptBridgeHandler.swift in Sources */,
+				1A0002072C12345600000207 /* BluetoothManager.swift in Sources */,
+				1A0002082C12345600000208 /* ExternalAccessoryEngine.swift in Sources */,
+				1A0002092C12345600000209 /* CoreBluetoothEngine.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1A0000052C12345600000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDEFINED_VARIABLES = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		1A0000062C12345600000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDEFINED_VARIABLES = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		1A0000072C12345600000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ZoeminiPrint/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Zoemini Print";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.michaelschuldes.zoemini-ivy2-print";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1A0000082C12345600000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ZoeminiPrint/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Zoemini Print";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.michaelschuldes.zoemini-ivy2-print";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1A0000032C12345600000003 /* Build configuration list for PBXProject "ZoeminiPrint" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A0000052C12345600000005 /* Debug */,
+				1A0000062C12345600000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A0000042C12345600000004 /* Build configuration list for PBXNativeTarget "ZoeminiPrint" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A0000072C12345600000007 /* Debug */,
+				1A0000082C12345600000008 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 1A0000012C12345600000001 /* Project object */;
+}

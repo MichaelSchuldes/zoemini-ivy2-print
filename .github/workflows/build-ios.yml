@@ -1,0 +1,76 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [ main, ios ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published, created ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build iOS IPA
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Sync Web Assets to iOS Project
+        run: |
+          mkdir -p ios/ZoeminiPrint/Assets
+          cp -r index.html manifest.json sw.js css js icons ios/ZoeminiPrint/Assets/
+
+      - name: Build Archive (Unsigned)
+        run: |
+          xcodebuild archive \
+            -project ios/ZoeminiPrint.xcodeproj \
+            -scheme ZoeminiPrint \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath ios/build/ZoeminiPrint.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Package Unsigned IPA and Archive
+        run: |
+          mkdir -p ios/build/Payload
+          cp -r ios/build/ZoeminiPrint.xcarchive/Products/Applications/ZoeminiPrint.app ios/build/Payload/
+          cd ios/build
+          zip -qr com.michaelschuldes.zoemini-ivy2-print.ipa Payload
+          cp com.michaelschuldes.zoemini-ivy2-print.ipa com.michaelschuldes.zoemini-ivy2-print-release.ipa
+          zip -qr ZoeminiPrint.xcarchive.zip ZoeminiPrint.xcarchive
+          cd ../..
+
+      - name: Upload Release IPA Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: com.michaelschuldes.zoemini-ivy2-print-release-ipa
+          path: ios/build/*.ipa
+          retention-days: 30
+
+      - name: Upload Xcode Archive Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ZoeminiPrint-xcarchive
+          path: ios/build/ZoeminiPrint.xcarchive.zip
+          retention-days: 30
+
+      - name: Upload IPA to GitHub Release
+        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            ios/build/com.michaelschuldes.zoemini-ivy2-print.ipa
+            ios/build/com.michaelschuldes.zoemini-ivy2-print-release.ipa
+            ios/build/ZoeminiPrint.xcarchive.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

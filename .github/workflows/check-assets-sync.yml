@@ -1,8 +1,8 @@
-name: Check Android Assets Sync
+name: Check Mobile Assets Sync
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, ios ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -12,14 +12,14 @@ permissions:
 
 jobs:
   check-sync:
-    name: Verify Web & Android Assets
+    name: Verify Web & Mobile Assets
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
-      - name: Check for differences between web assets and Android assets
+      - name: Check for differences between web assets and mobile assets
         run: |
           OUT_OF_SYNC=0
 
@@ -32,7 +32,7 @@ jobs:
               echo "::error::Android asset 'android/app/src/main/assets/$item' is missing!"
               OUT_OF_SYNC=1
             elif ! diff -ru "$item" "android/app/src/main/assets/$item"; then
-              echo "::error::Difference found in '$item'!"
+              echo "::error::Difference found in Android '$item'!"
               OUT_OF_SYNC=1
             fi
           done
@@ -46,13 +46,37 @@ jobs:
             fi
           done
 
+          echo "Checking web assets against ios/ZoeminiPrint/Assets/..."
+          for item in index.html manifest.json sw.js css js icons; do
+            if [ ! -e "$item" ]; then
+              echo "::error::Source web asset '$item' is missing!"
+              OUT_OF_SYNC=1
+            elif [ ! -e "ios/ZoeminiPrint/Assets/$item" ]; then
+              echo "::error::iOS asset 'ios/ZoeminiPrint/Assets/$item' is missing!"
+              OUT_OF_SYNC=1
+            elif ! diff -ru "$item" "ios/ZoeminiPrint/Assets/$item"; then
+              echo "::error::Difference found in iOS '$item'!"
+              OUT_OF_SYNC=1
+            fi
+          done
+
+          # Check for any stray files in ios assets not present at the root
+          for item in ios/ZoeminiPrint/Assets/*; do
+            base=$(basename "$item")
+            if [ ! -e "$base" ]; then
+              echo "::error::Extra file in iOS assets not present at root: $item"
+              OUT_OF_SYNC=1
+            fi
+          done
+
           if [ "$OUT_OF_SYNC" -ne 0 ]; then
             echo ""
-            echo "::error::Android assets are out of sync with website assets!"
+            echo "::error::Mobile assets are out of sync with website assets!"
             echo "To synchronize them, run:"
             echo "  cp -r index.html manifest.json sw.js css js icons android/app/src/main/assets/"
+            echo "  cp -r index.html manifest.json sw.js css js icons ios/ZoeminiPrint/Assets/"
             echo "and commit the changes."
             exit 1
           fi
 
-          echo "All Android assets are perfectly in sync with website assets!"
+          echo "All Android and iOS assets are perfectly in sync with website assets!"

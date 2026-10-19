@@ -37,7 +37,9 @@ export class ZoeminiSerialTransport {
 
   static isSupported() {
     return (
-      (typeof window !== "undefined" && typeof window.AndroidBluetoothSerial !== "undefined") ||
+      (typeof window !== "undefined" &&
+        (typeof window.AndroidBluetoothSerial !== "undefined" ||
+          typeof window.iOSBluetoothSerial !== "undefined")) ||
       (typeof navigator !== "undefined" && "serial" in navigator && window.isSecureContext)
     );
   }
@@ -49,19 +51,27 @@ export class ZoeminiSerialTransport {
       );
     }
 
-    if (typeof window !== "undefined" && window.AndroidBluetoothSerial) {
-      this.isAndroidBridge = true;
+    if (
+      typeof window !== "undefined" &&
+      (window.AndroidBluetoothSerial || window.iOSBluetoothSerial)
+    ) {
+      this.isNativeBridge = true;
+      this.nativeBridge = window.iOSBluetoothSerial || window.AndroidBluetoothSerial;
+      this.nativeBridgeType = window.iOSBluetoothSerial ? "iOS" : "Android";
+      this.isAndroidBridge = this.nativeBridgeType === "Android";
       let address = targetAddress || this.targetAddress;
 
+      let target = null;
       if (!address) {
         let devices = [];
         try {
-          devices = JSON.parse(window.AndroidBluetoothSerial.getBondedDevices() || "[]");
+          const raw = await this.nativeBridge.getBondedDevices();
+          devices = typeof raw === "string" ? JSON.parse(raw || "[]") : (raw || []);
         } catch (e) {
           console.warn("Error parsing bonded devices", e);
         }
 
-        let target = devices.find((d) =>
+        target = devices.find((d) =>
           /(canon|zoemini|ivy|mini printer)/i.test(d.name || "")
         );
 
@@ -71,13 +81,13 @@ export class ZoeminiSerialTransport {
 
         if (!target) {
           throw new ClientUnavailableError(
-            "No paired Canon printer found. Please pair the Zoemini in Android Bluetooth settings first."
+            `No paired Canon printer found. Please pair the Zoemini in ${this.nativeBridgeType} Bluetooth settings first.`
           );
         }
         address = target.address;
       }
 
-      const res = window.AndroidBluetoothSerial.connect(address);
+      const res = await this.nativeBridge.connect(address);
       if (res !== "OK") {
         throw new ClientUnavailableError(res || "Failed to connect to printer via native Bluetooth.");
       }
@@ -89,7 +99,7 @@ export class ZoeminiSerialTransport {
         this.onTraffic(
           "INFO",
           null,
-          `Opened Native Android RFCOMM stream to ${this.deviceName} (${address})`
+          `Opened Native ${this.nativeBridgeType} RFCOMM stream to ${this.deviceName} (${address})`
         );
       }
       return;
@@ -120,7 +130,7 @@ export class ZoeminiSerialTransport {
       throw new ClientUnavailableError();
     }
 
-    if (this.isAndroidBridge) {
+    if (this.isNativeBridge) {
       let binary = "";
       const len = uint8Array.byteLength;
       const chunkSize = 8192;
@@ -129,7 +139,7 @@ export class ZoeminiSerialTransport {
         binary += String.fromCharCode.apply(null, sub);
       }
       const b64 = btoa(binary);
-      const res = window.AndroidBluetoothSerial.writeBase64(b64);
+      const res = await this.nativeBridge.writeBase64(b64);
       if (res !== "OK") {
         throw new ClientUnavailableError(res);
       }
@@ -161,8 +171,8 @@ export class ZoeminiSerialTransport {
       throw new ClientUnavailableError();
     }
 
-    if (this.isAndroidBridge) {
-      const res = window.AndroidBluetoothSerial.readBase64(byteCount, timeoutMs);
+    if (this.isNativeBridge) {
+      const res = await this.nativeBridge.readBase64(byteCount, timeoutMs);
       if (!res || res.startsWith("ERR:")) {
         const err = res ? res.substring(4) : "Timeout";
         if (err.toLowerCase().includes("timeout")) {
@@ -283,12 +293,14 @@ export class ZoeminiSerialTransport {
 
   async disconnect() {
     this.connected = false;
-    if (this.isAndroidBridge) {
+    if (this.isNativeBridge) {
       try {
-        window.AndroidBluetoothSerial.disconnect();
+        if (this.nativeBridge) {
+          await this.nativeBridge.disconnect();
+        }
       } catch (_) {}
       if (this.onTraffic) {
-        this.onTraffic("INFO", null, "Disconnected Native Android RFCOMM stream.");
+        this.onTraffic("INFO", null, `Disconnected Native ${this.nativeBridgeType} RFCOMM stream.`);
       }
       return;
     }
