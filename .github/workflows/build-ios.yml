@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Sync Web Assets to iOS Project
         run: |
@@ -30,15 +30,18 @@ jobs:
 
       - name: Build Archive (Unsigned)
         run: |
+          mkdir -p ios/build
           xcodebuild archive \
             -project ios/ZoeminiPrint.xcodeproj \
             -scheme ZoeminiPrint \
             -configuration Release \
             -destination 'generic/platform=iOS' \
-            -archivePath ios/build/ZoeminiPrint.xcarchive \
-            CODE_SIGNING_ALLOWED=NO \
+            -archivePath "$PWD/ios/build/ZoeminiPrint.xcarchive" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY=""
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            CODE_SIGN_ENTITLEMENTS=""
 
       - name: Package Unsigned IPA and Archive
         run: |
@@ -51,14 +54,14 @@ jobs:
           cd ../..
 
       - name: Upload Release IPA Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: com.michaelschuldes.zoemini-ivy2-print-release-ipa
           path: ios/build/*.ipa
           retention-days: 30
 
       - name: Upload Xcode Archive Artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: ZoeminiPrint-xcarchive
           path: ios/build/ZoeminiPrint.xcarchive.zip
