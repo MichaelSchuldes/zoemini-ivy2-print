@@ -1,0 +1,58 @@
+name: Check Android Assets Sync
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-sync:
+    name: Verify Web & Android Assets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Check for differences between web assets and Android assets
+        run: |
+          OUT_OF_SYNC=0
+
+          echo "Checking web assets against android/app/src/main/assets/..."
+          for item in index.html manifest.json sw.js css js icons; do
+            if [ ! -e "$item" ]; then
+              echo "::error::Source web asset '$item' is missing!"
+              OUT_OF_SYNC=1
+            elif [ ! -e "android/app/src/main/assets/$item" ]; then
+              echo "::error::Android asset 'android/app/src/main/assets/$item' is missing!"
+              OUT_OF_SYNC=1
+            elif ! diff -ru "$item" "android/app/src/main/assets/$item"; then
+              echo "::error::Difference found in '$item'!"
+              OUT_OF_SYNC=1
+            fi
+          done
+
+          # Check for any stray files in android assets not present at the root
+          for item in android/app/src/main/assets/*; do
+            base=$(basename "$item")
+            if [ ! -e "$base" ]; then
+              echo "::error::Extra file in android assets not present at root: $item"
+              OUT_OF_SYNC=1
+            fi
+          done
+
+          if [ "$OUT_OF_SYNC" -ne 0 ]; then
+            echo ""
+            echo "::error::Android assets are out of sync with website assets!"
+            echo "To synchronize them, run:"
+            echo "  cp -r index.html manifest.json sw.js css js icons android/app/src/main/assets/"
+            echo "and commit the changes."
+            exit 1
+          fi
+
+          echo "All Android assets are perfectly in sync with website assets!"
